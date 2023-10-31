@@ -6,6 +6,38 @@
 <span style="color:gray;font-weight:400;font-size:20px">Make model-integration more simple in CV field.</span>
 </p>
 
+## 编译步骤
+### 1 拉取deepstream-triton 6.0镜像
+```
+docker pull nvcr.io/nvidia/deepstream:6.0-triton
+```
+
+### 2 下载video_pipe_c代码
+```
+git clone https://github.com/zjd1988/video_pipe_c.git
+```
+
+### 3 下载paddle_inference sdk
+
+```
+# 从 https://www.paddlepaddle.org.cn/inference/master/guides/install/download_lib.html#linux 页面选择  
+# CUDA11.2/cuDNN8.2/TensorRT8.0 对应的压缩包, 拷贝到上一次下载代码路径下
+cd video_pipe_c
+tar zxvf paddle_inference.tgz
+```
+
+### 4 启动docker 镜像，进行编译
+```
+cd video_pipe_c
+docker run --gpus all -it -v $PWD:/video_pipe_c  nvcr.io/nvidia/deepstream:6.0-triton /bin/bash
+cd /video_pipe_c
+mkdir build_x64 && cd build_x64
+cmake .. && make -j4
+
+注：因为镜像中opencv版本为4.2，默认不支持cv::transposeND函数，因此在nodes/vp_infer_node.cpp 文件中的使用下面的链接进行了替换
+https://github.com/opencv/opencv/blob/e9e6b1e22c1a966a81aca1217b16a51fe7311b3b/modules/core/src/matrix_transform.cpp#L293
+```
+
 ## VideoPipe
 
 A framework for video structured. It could handle complex tasks such as stream reading (from local or network), video decoding, inference based on deep learning models, OSD(on screen display), message broker via middleware (like kafka), video encoding and stream pushing(rtmp or local file). It's Plugin-Oriented coding style, we can construct different types of pipeline using independent plugins namely `Node` in framework. **wechat: zhzhi78** [中文介绍](https://www.cnblogs.com/xiaozhi_5638/p/16767917.html)
