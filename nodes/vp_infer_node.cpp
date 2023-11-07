@@ -214,8 +214,11 @@ namespace vp_nodes {
 
         // NCHW -> NHWC
         if (swap_chn) {
+            // cv::Mat blob_to_infer_tmp;
+            // transposeND(blob_to_infer, {0, 2, 3, 1}, blob_to_infer_tmp);
+            // blob_to_infer_tmp.copyTo(blob_to_infer);
             cv::Mat blob_to_infer_tmp;
-            transposeND(blob_to_infer, {0, 2, 3, 1}, blob_to_infer_tmp);
+            cv::transposeND(blob_to_infer, {0, 2, 3, 1}, blob_to_infer_tmp);
             blob_to_infer_tmp.copyTo(blob_to_infer);
         }
     }

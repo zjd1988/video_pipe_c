@@ -26,16 +26,37 @@ cd video_pipe_c
 tar zxvf paddle_inference.tgz
 ```
 
+### 5 下载opencv 代码
+```
+cd video_pipe_c
+wget -O opencv.zip https://github.com/opencv/opencv/archive/4.6.0.zip
+wget -O opencv_contrib.zip https://github.com/opencv/opencv_contrib/archive/4.6.0.zip
+unzip opencv.zip
+unzip opencv_contrib.zip
+```
+
 ### 4 启动docker 镜像，进行编译
 ```
 cd video_pipe_c
 docker run --gpus all -it -v $PWD:/video_pipe_c  nvcr.io/nvidia/deepstream:6.0-triton /bin/bash
+<!-- build opencv 4.6.0 -->
+cd /video_pipe_c/opencv-4.6.0
+mkdir build && cd build
+cd build 
+cmake -DCMAKE_BUILD_TYPE=RELEASE -DCMAKE_INSTALL_PREFIX=/video_pipe_c/opencv-4.6.0/install \
+    -DOPENCV_ENABLE_NONFREE=ON -DWITH_CUDA=ON -DWITH_CUDNN=ON -DWITH_TBB=ON -DOPENCV_DNN_CUDA=ON \
+    -DENABLE_FAST_MATH=1 -DCUDA_FAST_MATH=1 -DWITH_CUBLAS=1 -DOPENCV_GENERATE_PKGCONFIG=ON \
+    -DOPENCV_EXTRA_MODULES_PATH=/video_pipe_c/opencv_contrib-4.6.0/modules -DWITH_WEBP=OFF \
+    -DWITH_OPENCL=OFF -DETHASHLCL=OFF -DENABLE_CXX11=ON -DBUILD_EXAMPLES=OFF -DOPENCV_ENABLE_NONFREE=ON \
+    -DWITH_GSTREAMER=ON -DWITH_V4L=ON CUDA_ARCH_BIN="8.6" ..
+make -j8 && make install
+
+<!-- build video_pipe_c -->
 cd /video_pipe_c
 mkdir build_x64 && cd build_x64
 cmake .. && make -j4
 
-注：因为镜像中opencv版本为4.2，默认不支持cv::transposeND函数，因此在nodes/vp_infer_node.cpp 文件中的使用下面的链接进行了替换
-https://github.com/opencv/opencv/blob/e9e6b1e22c1a966a81aca1217b16a51fe7311b3b/modules/core/src/matrix_transform.cpp#L293
+注：因为镜像中opencv版本为4.2，加载人脸模型时会报错，所以需要安装大于4.5的版本，本地我是按4.6编译安装
 ```
 
 ## VideoPipe
