@@ -126,11 +126,13 @@ Basics
 Optional, if you need implement(or use built-in) infer nodes based on other inference backends other than `opencv::dnn`.
 - CUDA
 - TensorRT
-- [paddle inference](https://paddleinference.paddlepaddle.org.cn/v2.2/product_introduction/inference_intro.html)
+- paddle inference
 - onnx runtime
 - anything you like
 
-[environment for reference](./doc/env.md)
+[how to install cuda and tensorrt](./third_party/trt_vehicle/README.md)
+
+[how to install paddle_inference](./third_party/paddle_ocr/README.md)
 
 ## How to build and debug
 
@@ -248,7 +250,37 @@ VideoPipe is opensource totally and more portable for different soft/hard-ware p
 The products below borrow some experience/ideas from VideoPipe:
 > Note: they are not developed by VideoPipe totally.
 
-### behaviour analysis
+### behaviour analysis & image/video search
 ![](./doc/p6.png)
-### image/video search
 ![](./doc/p7.png)
+
+## Samples
+|id|sample|screenshot|
+|--|--|--|
+|1|1-1-1_sample|![](./doc//p10.png)|
+|2|1-1-N_sample|![](./doc//p11.png)|
+|3|1-N-N_sample|![](./doc//p12.png)|
+|4|N-1-N_sample|![](./doc//p13.png)|
+|5|N-N_sample|![](./doc//p14.png)|
+|6|paddle_infer_sample|![](./doc//p15.png)|
+|7|src_des_sample|![](./doc//p16.png)|
+|8|trt_infer_sample|![](./doc//p17.png)|
+|9|vp_logger_sample|-|
+|10|face_tracking_sample|![](./doc//p18.png)|
+|11|vehicle_tracking_sample|![](./doc//p22.png)|
+|12|interaction_with_pipe_sample|--|
+|13|record_sample|--|
+|14|message_broker_sample & message_broker_sample2|![](./doc//p21.png)|
+|15|mask_rcnn_sample|![](./doc//p30.png)|
+|16|openpose_sample|![](./doc//p31.png)|
+|17|enet_seg_sample|![](./doc//p32.png)|
+|18|multi_detectors_and_classifiers_sample|![](./doc//p33.png)|
+|19|image_des_sample|![](./doc//p34.png)|
+|20|image_src_sample|![](./doc//p35.png)|
+|21|rtsp_des_sample|![](./doc//p36.png)|
+|22|ba_crossline_sample|![](./doc//p37.png)|
+|23|plate_recognize_sample|![](./doc//p38.png)|
+|24|vehicle_body_scan_sample|![](./doc/p40.png)|
+|25|body_scan_and_plate_detect_sample|![](./doc/p39.png)|
+|26|app_src_sample|![](./doc/p41.png)|
+|27|vehicle_cluster_based_on_classify_encoding_sample|![](./doc/p42.png)|

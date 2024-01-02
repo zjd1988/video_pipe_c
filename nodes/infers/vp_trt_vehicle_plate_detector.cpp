@@ -60,14 +60,6 @@ namespace vp_nodes {
                 auto sub_target = std::make_shared<vp_objects::vp_sub_target>(x, y, w, h, 
                                                     -1, 0, plate.color + "_" + plate.text, frame_meta->frame_index, frame_meta->channel_index);
                 frame_meta->targets[i]->sub_targets.push_back(sub_target);
-                
-                // test for debug
-                /*
-                auto ori = frame_meta->frame(cv::Rect(x, y, w, h));
-                cv::imwrite("debug/" + std::to_string(frame_meta->frame_index) + ".jpg", ori);
-
-                ori = frame_meta->frame(cv::Rect(frame_meta->targets[i]->x, frame_meta->targets[i]->y, frame_meta->targets[i]->width, frame_meta->targets[i]->height));
-                cv::imwrite("debug/__" + std::to_string(frame_meta->frame_index) + ".jpg", ori);*/
             }
         }
         auto infer_time = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - start_time);
