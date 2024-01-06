@@ -4,7 +4,7 @@ namespace vp_nodes {
     vp_trt_vehicle_feature_encoder::vp_trt_vehicle_feature_encoder(std::string node_name, 
                                                                     std::string vehicle_feature_model_path, 
                                                                     std::vector<int> p_class_ids_applied_to):
-                                                                    vp_secondary_infer_node(node_name, "", "", "", 1, 1, 1, p_class_ids_applied_to) {
+                                                                    vp_secondary_infer_node(node_name, "", "", -1, "", "", 1, 1, 1, p_class_ids_applied_to) {
         vehicle_feature_encoder = std::make_shared<trt_vehicle::VehicleFeatureEncoder>(vehicle_feature_model_path);
         this->initialized();
     }

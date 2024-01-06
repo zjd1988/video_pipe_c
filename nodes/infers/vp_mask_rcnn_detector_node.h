@@ -25,6 +25,8 @@ namespace vp_nodes {
     public:
         vp_mask_rcnn_detector_node(std::string node_name, 
                             std::string model_path, 
+                            std::string model_name = "", 
+                            int         model_version = -1, 
                             std::string model_config_path = "", 
                             std::string labels_path = "", 
                             int input_width = 416, 

@@ -6,6 +6,8 @@ namespace vp_nodes {
     
     vp_classifier_node::vp_classifier_node(std::string node_name, 
                                             std::string model_path, 
+                                            std::string model_name, 
+                                            int         model_version, 
                                             std::string model_config_path, 
                                             std::string labels_path, 
                                             int input_width, 
@@ -21,6 +23,8 @@ namespace vp_nodes {
                                             bool swap_chn):
                                             vp_secondary_infer_node(node_name,
                                                                     model_path,
+                                                                    model_name,
+                                                                    model_version,
                                                                     model_config_path,
                                                                     labels_path,
                                                                     input_width, 

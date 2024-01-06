@@ -2,11 +2,14 @@
 #include <fstream>
 
 #include "vp_infer_node.h"
+#include "../utils/vp_tritonserver.h"
 
 namespace vp_nodes {
     vp_infer_node::vp_infer_node(std::string node_name, 
                             vp_infer_type infer_type, 
                             std::string model_path, 
+                            std::string model_name, 
+                            int         model_version, 
                             std::string model_config_path, 
                             std::string labels_path, 
                             int input_width, 
@@ -20,6 +23,8 @@ namespace vp_nodes {
                             vp_node(node_name),
                             infer_type(infer_type),
                             model_path(model_path),
+                            model_name(model_name),
+                            model_version(model_version),
                             model_config_path(model_config_path),
                             labels_path(labels_path),
                             input_width(input_width),
@@ -155,6 +160,11 @@ namespace vp_nodes {
         }
     }
 
+    void vp_infer_node::triton_infer(const cv::Mat& blob_to_infer, std::vector<cv::Mat>& raw_outputs) {
+        std::vector<cv::Mat> inputs{blob_to_infer};
+        TRITON_SERVER_INFER(model_name, std::to_string(model_version), inputs, raw_outputs);
+    }
+
     static void transposeND(cv::Mat inp, const std::vector<int>& order, cv::Mat out)
     {
         std::vector<int> newShape(order.size());
@@ -252,7 +262,10 @@ namespace vp_nodes {
 
         start_time = std::chrono::system_clock::now();
         // 3rd step, infer
-        infer(blob_to_infer, raw_outputs);
+        if (model_name != "")
+            triton_infer(blob_to_infer, raw_outputs);
+        else
+            infer(blob_to_infer, raw_outputs);
         auto infer_time = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - start_time);
 
         start_time = std::chrono::system_clock::now();

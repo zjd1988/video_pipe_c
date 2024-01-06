@@ -22,12 +22,12 @@ namespace vp_nodes {
         void generatePriors();
     protected:
         // override infer and preprocess as yunet has a different logic
-        virtual void infer(const cv::Mat& blob_to_infer, std::vector<cv::Mat>& raw_outputs) override;
+        // virtual void infer(const cv::Mat& blob_to_infer, std::vector<cv::Mat>& raw_outputs) override;
         virtual void preprocess(const std::vector<cv::Mat>& mats_to_infer, cv::Mat& blob_to_infer) override;
 
         virtual void postprocess(const std::vector<cv::Mat>& raw_outputs, const std::vector<std::shared_ptr<vp_objects::vp_frame_meta>>& frame_meta_with_batch) override;
     public:
-        vp_yunet_face_detector_node(std::string node_name, std::string model_path, float score_threshold = 0.7, float nms_threshold = 0.5, int top_k = 50);
+        vp_yunet_face_detector_node(std::string node_name, std::string model_path, std::string model_name = "", int model_version = -1, float score_threshold = 0.7, float nms_threshold = 0.5, int top_k = 50);
         ~vp_yunet_face_detector_node();
     };
 

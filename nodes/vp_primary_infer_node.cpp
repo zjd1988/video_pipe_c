@@ -5,6 +5,8 @@ namespace vp_nodes {
         
     vp_primary_infer_node::vp_primary_infer_node(std::string node_name, 
                                                 std::string model_path, 
+                                                std::string model_name,
+                                                int         model_version,
                                                 std::string model_config_path, 
                                                 std::string labels_path, 
                                                 int input_width, 
@@ -19,6 +21,8 @@ namespace vp_nodes {
                                                 vp_infer_node(node_name, 
                                                             vp_infer_type::PRIMARY, 
                                                             model_path, 
+                                                            model_name, 
+                                                            model_version, 
                                                             model_config_path, 
                                                             labels_path,
                                                             input_width, 

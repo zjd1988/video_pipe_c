@@ -4,7 +4,7 @@ namespace vp_nodes {
     vp_trt_vehicle_type_classifier::vp_trt_vehicle_type_classifier(std::string node_name, 
                                                                     std::string vehicle_type_cls_model_path, 
                                                                     std::vector<int> p_class_ids_applied_to):
-                                                                    vp_secondary_infer_node(node_name, "", "", "", 1, 1, 1, p_class_ids_applied_to) {
+                                                                    vp_secondary_infer_node(node_name, "", "", -1, "", "", 1, 1, 1, p_class_ids_applied_to) {
         vehicle_type_classifier = std::make_shared<trt_vehicle::VehicleTypeClassifier>(vehicle_type_cls_model_path);
         this->initialized();
     }

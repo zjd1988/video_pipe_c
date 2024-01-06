@@ -6,10 +6,12 @@ namespace vp_nodes {
         
     vp_yunet_face_detector_node::vp_yunet_face_detector_node(std::string node_name, 
                                                             std::string model_path, 
+                                                            std::string model_name, 
+                                                            int         model_version, 
                                                             float score_threshold, 
                                                             float nms_threshold, 
                                                             int top_k):
-                                                            vp_primary_infer_node(node_name, model_path),
+                                                            vp_primary_infer_node(node_name, model_path, model_name, model_version),
                                                             scoreThreshold(score_threshold),
                                                             nmsThreshold(nms_threshold),
                                                             topK(top_k) {
@@ -154,16 +156,16 @@ namespace vp_nodes {
     }
     
     // refer to vp_infer_node::infer
-    void vp_yunet_face_detector_node::infer(const cv::Mat& blob_to_infer, std::vector<cv::Mat>& raw_outputs) {
-        // blob_to_infer is a 4D matrix
-        // the first dim is number of batch, MUST be 1
-        assert(blob_to_infer.dims == 4);
-        assert(blob_to_infer.size[0] == 1);
-        assert(!net.empty());
+    // void vp_yunet_face_detector_node::infer(const cv::Mat& blob_to_infer, std::vector<cv::Mat>& raw_outputs) {
+    //     // blob_to_infer is a 4D matrix
+    //     // the first dim is number of batch, MUST be 1
+    //     assert(blob_to_infer.dims == 4);
+    //     assert(blob_to_infer.size[0] == 1);
+    //     assert(!net.empty());
 
-        net.setInput(blob_to_infer);
-        net.forward(raw_outputs, out_names);
-    }
+    //     net.setInput(blob_to_infer);
+    //     net.forward(raw_outputs, out_names);
+    // }
 
     void vp_yunet_face_detector_node::generatePriors() {
         using namespace cv;

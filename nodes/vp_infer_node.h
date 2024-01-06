@@ -25,6 +25,8 @@ namespace vp_nodes {
     protected:
         vp_infer_type infer_type;
         std::string model_path;
+        std::string model_name;
+        int         model_version;
         std::string model_config_path;
         std::string labels_path;
         int input_width;
@@ -42,6 +44,8 @@ namespace vp_nodes {
         vp_infer_node(std::string node_name, 
                     vp_infer_type infer_type, 
                     std::string model_path, 
+                    std::string model_name = "", 
+                    int         model_version = -1, 
                     std::string model_config_path = "", 
                     std::string labels_path = "", 
                     int input_width = 128, 
@@ -64,6 +68,10 @@ namespace vp_nodes {
         // the 3rd step, has a default implementation.
         // infer and retrive raw outputs.
         virtual void infer(const cv::Mat& blob_to_infer, std::vector<cv::Mat>& raw_outputs);
+
+        // the 3rd step, has a default implementation.
+        // infer and retrive raw outputs.
+        virtual void triton_infer(const cv::Mat& blob_to_infer, std::vector<cv::Mat>& raw_outputs);
 
         // the 4th step, MUST implement in specific derived class.
         // postprocess on raw outputs and create/update something back to frame meta again.
