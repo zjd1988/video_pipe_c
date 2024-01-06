@@ -89,8 +89,8 @@ target_link_libraries(N-1-N_sample video_pipe ${OpenCV_LIBS} ${TRITON_SERVER_LIB
 add_executable(N-N_sample sample/N-N_sample.cpp)
 target_link_libraries(N-N_sample video_pipe ${OpenCV_LIBS} ${TRITON_SERVER_LIBS} ${GST_DEPEND_LIBS})
 
-add_executable(paddle_infer_sample sample/paddle_infer_sample.cpp)
-target_link_libraries(paddle_infer_sample video_pipe ${OpenCV_LIBS} ${TRITON_SERVER_LIBS} ${GST_DEPEND_LIBS})
+# add_executable(paddle_infer_sample sample/paddle_infer_sample.cpp)
+# target_link_libraries(paddle_infer_sample video_pipe ${OpenCV_LIBS} ${TRITON_SERVER_LIBS} ${GST_DEPEND_LIBS})
 
 add_executable(src_des_sample sample/src_des_sample.cpp)
 target_link_libraries(src_des_sample video_pipe ${OpenCV_LIBS} ${TRITON_SERVER_LIBS} ${GST_DEPEND_LIBS})
