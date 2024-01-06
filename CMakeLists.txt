@@ -38,19 +38,6 @@ message(STATUS "    include path: ${GST_INCLUDE_DIRS}")
 include_directories( ${GST_INCLUDE_DIRS} )
 set (GST_DEPEND_LIBS ${GST_LIBRARIES} ${GSTAPP_LIBRARIES} ${GST_RTSP_LIBRARIES})
 
-# paddle inference
-set(PADDLE_INFERENCE_INCLUDE_DIRS ${CMAKE_SOURCE_DIR}/paddle_inference/paddle/include)
-set(PADDLE_INFERENCE_LIB_DIRS ${CMAKE_SOURCE_DIR}/paddle_inference/paddle/lib)
-set(GLOG_INCLUDE_DIRS ${CMAKE_SOURCE_DIR}/paddle_inference/third_party/install/glog/include)
-set(GLOG_LIB_DIRS ${CMAKE_SOURCE_DIR}/paddle_inference/third_party/install/glog/lib)
-set(MKLDNN_LIBS ${CMAKE_SOURCE_DIR}/paddle_inference/third_party/install/mkldnn/lib/libdnnl.so.3)
-set(MKLML_LIBS ${CMAKE_SOURCE_DIR}/paddle_inference/third_party/install/mklml/lib/libiomp5.so
-    ${CMAKE_SOURCE_DIR}/paddle_inference/third_party/install/mklml/lib/libmklml_intel.so)
-set(PADDLE2ONNX_LIBS ${CMAKE_SOURCE_DIR}/paddle_inference/third_party/install/paddle2onnx/lib/libpaddle2onnx.so)
-set(ONNXRUNTIME_LIBS ${CMAKE_SOURCE_DIR}/paddle_inference/third_party/install/onnxruntime/lib/libonnxruntime.so)
-set(PADDLE_THIRDPARTY_LIBS ${MKLDNN_LIBS} ${MKLML_LIBS} ${PADDLE2ONNX_LIBS} ${ONNXRUNTIME_LIBS})
-set(PADDLE_THIRDPARTY_LIBS )
-
 # triton server
 set(TRITON_SERVER_INCLUDE_DIRS /opt/tritonserver/include)
 set(TRITON_SERVER_LIBS /opt/tritonserver/lib/libtritonserver.so)
@@ -65,13 +52,6 @@ include_directories( ${PADDLE_INFERENCE_INCLUDE_DIRS} ${TRITON_SERVER_INCLUDE_DI
 file(GLOB TRT_VEHICLE_SOURCES "third_party/trt_vehicle/**/*.cpp")
 cuda_add_library(trt_vehicle SHARED ${TRT_VEHICLE_SOURCES})
 target_link_libraries(trt_vehicle nvinfer ${OpenCV_LIBS} ${CUDA_LIBRARIES})
-
-# paddle_ocr
-# file(GLOB PADDLE_OCR_SOURCES "third_party/paddle_ocr/**/*.cpp")
-# add_library(paddle_ocr SHARED ${PADDLE_OCR_SOURCES})
-# target_link_directories(paddle_ocr PRIVATE ${PADDLE_INFERENCE_LIB_DIRS} ${GLOG_LIB_DIRS})
-# target_include_directories(paddle_ocr PRIVATE ${PADDLE_INFERENCE_INCLUDE_DIRS} ${GLOG_INCLUDE_DIRS})
-# target_link_libraries(paddle_ocr PRIVATE paddle_inference glog)
 
 file(GLOB NODES "nodes/*.cpp")
 file(GLOB INFERS_NODES "nodes/infers/*.cpp")
@@ -95,49 +75,49 @@ add_library(video_pipe SHARED ${NODES} ${INFERS_NODES} ${OSD_NODES} ${TRACK_NODE
 target_link_libraries(video_pipe ${OpenCV_LIBS} ${TRITON_SERVER_LIBS} trt_vehicle -lstdc++fs)
 
 add_executable(1-1-1_sample sample/1-1-1_sample.cpp)
-target_link_libraries(1-1-1_sample video_pipe ${OpenCV_LIBS} ${TRITON_SERVER_LIBS} ${PADDLE_THIRDPARTY_LIBS} ${GST_DEPEND_LIBS})
+target_link_libraries(1-1-1_sample video_pipe ${OpenCV_LIBS} ${TRITON_SERVER_LIBS} ${GST_DEPEND_LIBS})
 
 add_executable(1-1-N_sample sample/1-1-N_sample.cpp)
-target_link_libraries(1-1-N_sample video_pipe ${OpenCV_LIBS} ${TRITON_SERVER_LIBS} ${PADDLE_THIRDPARTY_LIBS} ${GST_DEPEND_LIBS})
+target_link_libraries(1-1-N_sample video_pipe ${OpenCV_LIBS} ${TRITON_SERVER_LIBS} ${GST_DEPEND_LIBS})
 
 add_executable(1-N-N_sample sample/1-N-N_sample.cpp)
-target_link_libraries(1-N-N_sample video_pipe ${OpenCV_LIBS} ${TRITON_SERVER_LIBS} ${PADDLE_THIRDPARTY_LIBS} ${GST_DEPEND_LIBS})
+target_link_libraries(1-N-N_sample video_pipe ${OpenCV_LIBS} ${TRITON_SERVER_LIBS} ${GST_DEPEND_LIBS})
 
 add_executable(N-1-N_sample sample/N-1-N_sample.cpp)
-target_link_libraries(N-1-N_sample video_pipe ${OpenCV_LIBS} ${TRITON_SERVER_LIBS} ${PADDLE_THIRDPARTY_LIBS} ${GST_DEPEND_LIBS})
+target_link_libraries(N-1-N_sample video_pipe ${OpenCV_LIBS} ${TRITON_SERVER_LIBS} ${GST_DEPEND_LIBS})
 
 add_executable(N-N_sample sample/N-N_sample.cpp)
-target_link_libraries(N-N_sample video_pipe ${OpenCV_LIBS} ${TRITON_SERVER_LIBS} ${PADDLE_THIRDPARTY_LIBS} ${GST_DEPEND_LIBS})
+target_link_libraries(N-N_sample video_pipe ${OpenCV_LIBS} ${TRITON_SERVER_LIBS} ${GST_DEPEND_LIBS})
 
 add_executable(paddle_infer_sample sample/paddle_infer_sample.cpp)
-target_link_libraries(paddle_infer_sample video_pipe ${OpenCV_LIBS} ${TRITON_SERVER_LIBS} ${PADDLE_THIRDPARTY_LIBS} ${GST_DEPEND_LIBS})
+target_link_libraries(paddle_infer_sample video_pipe ${OpenCV_LIBS} ${TRITON_SERVER_LIBS} ${GST_DEPEND_LIBS})
 
 add_executable(src_des_sample sample/src_des_sample.cpp)
-target_link_libraries(src_des_sample video_pipe ${OpenCV_LIBS} ${TRITON_SERVER_LIBS} ${PADDLE_THIRDPARTY_LIBS} ${GST_DEPEND_LIBS})
+target_link_libraries(src_des_sample video_pipe ${OpenCV_LIBS} ${TRITON_SERVER_LIBS} ${GST_DEPEND_LIBS})
 
 add_executable(trt_infer_sample sample/trt_infer_sample.cpp)
-target_link_libraries(trt_infer_sample video_pipe ${OpenCV_LIBS} ${TRITON_SERVER_LIBS} ${PADDLE_THIRDPARTY_LIBS} ${GST_DEPEND_LIBS})
+target_link_libraries(trt_infer_sample video_pipe ${OpenCV_LIBS} ${TRITON_SERVER_LIBS} ${GST_DEPEND_LIBS})
 
 add_executable(vp_logger_sample sample/vp_logger_sample.cpp)
-target_link_libraries(vp_logger_sample video_pipe ${OpenCV_LIBS} ${TRITON_SERVER_LIBS} ${PADDLE_THIRDPARTY_LIBS} ${GST_DEPEND_LIBS})
+target_link_libraries(vp_logger_sample video_pipe ${OpenCV_LIBS} ${TRITON_SERVER_LIBS} ${GST_DEPEND_LIBS})
 
 add_executable(face_tracking_sample sample/face_tracking_sample.cpp)
-target_link_libraries(face_tracking_sample video_pipe ${OpenCV_LIBS} ${TRITON_SERVER_LIBS} ${PADDLE_THIRDPARTY_LIBS} ${GST_DEPEND_LIBS})
+target_link_libraries(face_tracking_sample video_pipe ${OpenCV_LIBS} ${TRITON_SERVER_LIBS} ${GST_DEPEND_LIBS})
 
 add_executable(interaction_with_pipe_sample sample/interaction_with_pipe_sample.cpp)
-target_link_libraries(interaction_with_pipe_sample video_pipe ${OpenCV_LIBS} ${TRITON_SERVER_LIBS} ${PADDLE_THIRDPARTY_LIBS} ${GST_DEPEND_LIBS})
+target_link_libraries(interaction_with_pipe_sample video_pipe ${OpenCV_LIBS} ${TRITON_SERVER_LIBS} ${GST_DEPEND_LIBS})
 
 add_executable(message_broker_sample sample/message_broker_sample.cpp)
-target_link_libraries(message_broker_sample video_pipe ${OpenCV_LIBS} ${TRITON_SERVER_LIBS} ${PADDLE_THIRDPARTY_LIBS} ${GST_DEPEND_LIBS})
+target_link_libraries(message_broker_sample video_pipe ${OpenCV_LIBS} ${TRITON_SERVER_LIBS} ${GST_DEPEND_LIBS})
 
 add_executable(message_broker_sample2 sample/message_broker_sample2.cpp)
-target_link_libraries(message_broker_sample2 video_pipe ${OpenCV_LIBS} ${TRITON_SERVER_LIBS} ${PADDLE_THIRDPARTY_LIBS} ${GST_DEPEND_LIBS})
+target_link_libraries(message_broker_sample2 video_pipe ${OpenCV_LIBS} ${TRITON_SERVER_LIBS} ${GST_DEPEND_LIBS})
 
 add_executable(vehicle_tracking_sample sample/vehicle_tracking_sample.cpp)
-target_link_libraries(vehicle_tracking_sample video_pipe ${OpenCV_LIBS} ${TRITON_SERVER_LIBS} ${PADDLE_THIRDPARTY_LIBS} ${GST_DEPEND_LIBS})
+target_link_libraries(vehicle_tracking_sample video_pipe ${OpenCV_LIBS} ${TRITON_SERVER_LIBS} ${GST_DEPEND_LIBS})
 
 add_executable(record_sample sample/record_sample.cpp)
-target_link_libraries(record_sample video_pipe ${OpenCV_LIBS} ${TRITON_SERVER_LIBS} ${PADDLE_THIRDPARTY_LIBS} ${GST_DEPEND_LIBS})
+target_link_libraries(record_sample video_pipe ${OpenCV_LIBS} ${TRITON_SERVER_LIBS} ${GST_DEPEND_LIBS})
 
 add_executable(triton_infer_sample sample/triton_infer_sample.cpp)
-target_link_libraries(triton_infer_sample video_pipe ${OpenCV_LIBS} ${TRITON_SERVER_LIBS} ${PADDLE_THIRDPARTY_LIBS} ${GST_DEPEND_LIBS})
+target_link_libraries(triton_infer_sample video_pipe ${OpenCV_LIBS} ${TRITON_SERVER_LIBS} ${GST_DEPEND_LIBS})
