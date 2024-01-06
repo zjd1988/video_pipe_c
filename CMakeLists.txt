@@ -121,3 +121,6 @@ target_link_libraries(record_sample video_pipe ${OpenCV_LIBS} ${TRITON_SERVER_LI
 
 add_executable(triton_infer_sample sample/triton_infer_sample.cpp)
 target_link_libraries(triton_infer_sample video_pipe ${OpenCV_LIBS} ${TRITON_SERVER_LIBS} ${GST_DEPEND_LIBS})
+
+add_executable(1-1-1_tritonserver_sample sample/1-1-1_tritonserver_sample.cpp)
+target_link_libraries(1-1-1_tritonserver_sample video_pipe ${OpenCV_LIBS} ${TRITON_SERVER_LIBS} ${GST_DEPEND_LIBS})
