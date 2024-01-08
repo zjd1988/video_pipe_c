@@ -72,7 +72,7 @@ cd /video_pipe_c/build_x64
 ```
 git clone https://github.com/zjd1988/video_pipe_c.git
 <!-- 构建dev debug镜像 -->
-docker build -t nvcr.io/nvidia/deepstream:6.0-triton-video-pipe-c -f ./dockerfiles/Dockerfile-x64-dev
+docker build -t nvcr.io/nvidia/deepstream:6.0-triton-video-pipe-c -f ./dockerfiles/Dockerfile-x64-dev .
 
 <!-- 构建release镜像 -->
 待补充
