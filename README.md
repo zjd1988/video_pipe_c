@@ -6,7 +6,7 @@
 <span style="color:gray;font-weight:400;font-size:20px">Make model-integration more simple in CV field.</span>
 </p>
 
-## 编译步骤
+## 本地编译步骤
 ### 1 拉取deepstream-triton 6.0镜像
 ```
 docker pull nvcr.io/nvidia/deepstream:6.0-triton   主机系统需要为ubuntu18.04
@@ -38,7 +38,6 @@ apt-get install cmake
 <!-- build opencv 4.6.0 -->
 cd /video_pipe_c/opencv-4.6.0
 mkdir build && cd build
-cd build 
 <!-- build opencv with cuda, for example rtx3090 -->
 cmake -DCMAKE_BUILD_TYPE=RELEASE -DCMAKE_INSTALL_PREFIX=/video_pipe_c/opencv-4.6.0/install \
     -DOPENCV_ENABLE_NONFREE=ON -DWITH_CUDA=ON -DWITH_CUDNN=ON -DWITH_TBB=ON -DOPENCV_DNN_CUDA=ON \
@@ -68,6 +67,17 @@ cmake .. && make -j4
 cd /video_pipe_c/build_x64
 ./triton_infer_sample
 ```
+
+## docker编译步骤
+```
+git clone https://github.com/zjd1988/video_pipe_c.git
+<!-- 构建dev debug镜像 -->
+docker build -t nvcr.io/nvidia/deepstream:6.0-triton-video-pipe-c -f ./dockerfiles/Dockerfile-x64-dev
+
+<!-- 构建release镜像 -->
+待补充
+```
+
 
 ## VideoPipe
 
