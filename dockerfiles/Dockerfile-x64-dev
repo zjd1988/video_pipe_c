@@ -1,0 +1,35 @@
+FROM nvcr.io/nvidia/deepstream:6.0-triton
+
+RUN echo "Asia/Shanghai" > /etc/timezone 
+ENV WORK_SAPCE=/workspace/video_pipe_c
+
+# create work space dir and change dir
+RUN mkdir -p ${WORK_SAPCE}
+WORKDIR ${WORK_SAPCE}
+
+# install dependcy 
+RUN apt-get install -y --no-install-recommends unzip cmake
+
+# copy video_pipe_c code to workspace
+COPY --chown=root . ${WORK_SAPCE}
+
+# downdload opencv-4.6
+RUN cd ${WORK_SAPCE}
+RUN wget -O opencv.zip https://github.com/opencv/opencv/archive/4.6.0.zip
+RUN wget -O opencv_contrib.zip https://github.com/opencv/opencv_contrib/archive/4.6.0.zip
+RUN unzip opencv.zip
+RUN unzip opencv_contrib.zip
+
+# build and install opencv-4.6
+RUN mkdir ${WORK_SAPCE}/opencv-4.6.0/build && cd ${WORK_SAPCE}/opencv-4.6.0/build
+WORKDIR ${WORK_SAPCE}/opencv-4.6.0/build
+RUN cmake -DCMAKE_BUILD_TYPE=RELEASE -DCMAKE_INSTALL_PREFIX=${WORK_SAPCE}/opencv-4.6.0/install \
+    -DOPENCV_ENABLE_NONFREE=ON -DWITH_TBB=ON -DENABLE_FAST_MATH=1 -DOPENCV_GENERATE_PKGCONFIG=ON \
+    -DOPENCV_EXTRA_MODULES_PATH=${WORK_SAPCE}/opencv_contrib-4.6.0/modules -DWITH_WEBP=OFF \
+    -DWITH_OPENCL=OFF -DETHASHLCL=OFF -DENABLE_CXX11=ON -DBUILD_EXAMPLES=OFF -DOPENCV_ENABLE_NONFREE=ON \
+    -DWITH_GSTREAMER=ON -DWITH_V4L=ON ..
+RUN make -j8 && make install
+
+# build video_pipe_c
+WORKDIR ${WORK_SAPCE}
+RUN mkdir build_x64 && cd build_x64 && cmake -DOpenCV_DIR=${WORK_SAPCE}/opencv-4.6.0/build .. && make -j4
