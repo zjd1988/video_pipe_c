@@ -59,16 +59,6 @@ cd /data/github_codes/video_pipe_c/build_arm64
 ./1-1-1_tritonserver_sample
 ```
 
-## docker编译步骤
-```
-git clone https://github.com/zjd1988/video_pipe_c.git
-<!-- 构建dev debug镜像 -->
-docker build -t nvcr.io/nvidia/deepstream:6.0-triton-video-pipe-c -f ./dockerfiles/Dockerfile-x64-dev .
-
-<!-- 构建release镜像 -->
-待补充
-```
-
 
 ## VideoPipe
 
