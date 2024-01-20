@@ -89,7 +89,7 @@ namespace vp_nodes {
         if (number_of_batch <= batch_size) {
             // infer one time directly
             net.setInput(blob_to_infer);
-            net.forward(raw_outputs/*, net.getUnconnectedOutLayersNames()*/);
+            net.forward(raw_outputs, net.getUnconnectedOutLayersNames());
         }
         else {
             // infer more times

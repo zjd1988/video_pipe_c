@@ -9,20 +9,16 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -Wall -Ofast -Wfatal-errors -D_MWAITXINTRIN_H_INCLUDED")
 
 # OpenCV
+if (LOCAL_OPENCV_DIR)
+    message(STATUS ${LOCAL_OPENCV_DIR})
+    set(OpenCV_DIR ${LOCAL_OPENCV_DIR})
+endif()
 find_package(OpenCV REQUIRED)
 message(STATUS "OpenCV library status:")
 message(STATUS "    version: ${OpenCV_VERSION}")
 message(STATUS "    libraries: ${OpenCV_LIBS}")
 message(STATUS "    include path: ${OpenCV_INCLUDE_DIRS}")
 include_directories( ${OpenCV_INCLUDE_DIRS} )
-
-# CUDA
-find_package(CUDA REQUIRED)
-message(STATUS "CUDA library status:")
-message(STATUS "    version: ${CUDA_VERSION}")
-message(STATUS "    libraries: ${CUDA_LIBRARIES}")
-message(STATUS "    include path: ${CUDA_INCLUDE_DIRS}")
-include_directories( ${CUDA_INCLUDE_DIRS} )
 
 # GST
 include(FindPkgConfig)# equals `pkg-config --cflags --libs gstreamer-1.0`
@@ -38,8 +34,13 @@ include_directories( ${GST_INCLUDE_DIRS} )
 set (GST_DEPEND_LIBS ${GST_LIBRARIES} ${GSTAPP_LIBRARIES} ${GST_RTSP_LIBRARIES})
 
 # triton server
-set(TRITON_SERVER_INCLUDE_DIRS /opt/tritonserver/include)
-set(TRITON_SERVER_LIBS /opt/tritonserver/lib/libtritonserver.so)
+if (LOCAL_TRITONSERVER_DIR)
+    set(TRITON_SERVER_INCLUDE_DIRS ${LOCAL_TRITONSERVER_DIR}/opt/tritonserver/include)
+    set(TRITON_SERVER_LIBS ${LOCAL_TRITONSERVER_DIR}/opt/tritonserver/lib/libtritonserver.so)
+else()
+    set(TRITON_SERVER_INCLUDE_DIRS /opt/tritonserver/include)
+    set(TRITON_SERVER_LIBS /opt/tritonserver/lib/libtritonserver.so)
+endif()
 
 # rapid json
 set(RAPID_JSON_INCLUDE_DIRS ${CMAKE_SOURCE_DIR}/third_party/rapidjson/include)
@@ -47,10 +48,6 @@ set(RAPID_JSON_INCLUDE_DIRS ${CMAKE_SOURCE_DIR}/third_party/rapidjson/include)
 # set include directories
 include_directories( ${PADDLE_INFERENCE_INCLUDE_DIRS} ${TRITON_SERVER_INCLUDE_DIRS} ${RAPID_JSON_INCLUDE_DIRS})
 
-# trt_vehicle
-file(GLOB TRT_VEHICLE_SOURCES "third_party/trt_vehicle/**/*.cpp")
-cuda_add_library(trt_vehicle SHARED ${TRT_VEHICLE_SOURCES})
-target_link_libraries(trt_vehicle nvinfer ${OpenCV_LIBS} ${CUDA_LIBRARIES})
 
 file(GLOB NODES "nodes/*.cpp")
 file(GLOB INFERS_NODES "nodes/infers/*.cpp")
@@ -71,52 +68,52 @@ add_library(video_pipe SHARED ${NODES} ${INFERS_NODES} ${OSD_NODES} ${TRACK_NODE
     ${OBJECTS} ${ELEMENTS_OBJECTS} ${SHAPES_OBJECTS} ${BA_OBJECTS} ${UTILS_ANALYSIS_BOARD} ${LOGGER}
     ${TRITON_SERVER_INFER})
 # target_link_libraries(video_pipe ${OpenCV_LIBS} ${TRITON_SERVER_LIBS} paddle_ocr trt_vehicle -lstdc++fs)
-target_link_libraries(video_pipe ${OpenCV_LIBS} ${TRITON_SERVER_LIBS} trt_vehicle -lstdc++fs)
+target_link_libraries(video_pipe ${OpenCV_LIBS} ${TRITON_SERVER_LIBS} -lstdc++fs)
 
-add_executable(1-1-1_sample sample/1-1-1_sample.cpp)
-target_link_libraries(1-1-1_sample video_pipe ${OpenCV_LIBS} ${TRITON_SERVER_LIBS} ${GST_DEPEND_LIBS})
+#add_executable(1-1-1_sample sample/1-1-1_sample.cpp)
+#target_link_libraries(1-1-1_sample video_pipe ${OpenCV_LIBS} ${TRITON_SERVER_LIBS} ${GST_DEPEND_LIBS})
 
-add_executable(1-1-N_sample sample/1-1-N_sample.cpp)
-target_link_libraries(1-1-N_sample video_pipe ${OpenCV_LIBS} ${TRITON_SERVER_LIBS} ${GST_DEPEND_LIBS})
+#add_executable(1-1-N_sample sample/1-1-N_sample.cpp)
+#target_link_libraries(1-1-N_sample video_pipe ${OpenCV_LIBS} ${TRITON_SERVER_LIBS} ${GST_DEPEND_LIBS})
 
-add_executable(1-N-N_sample sample/1-N-N_sample.cpp)
-target_link_libraries(1-N-N_sample video_pipe ${OpenCV_LIBS} ${TRITON_SERVER_LIBS} ${GST_DEPEND_LIBS})
+#add_executable(1-N-N_sample sample/1-N-N_sample.cpp)
+#target_link_libraries(1-N-N_sample video_pipe ${OpenCV_LIBS} ${TRITON_SERVER_LIBS} ${GST_DEPEND_LIBS})
 
-add_executable(N-1-N_sample sample/N-1-N_sample.cpp)
-target_link_libraries(N-1-N_sample video_pipe ${OpenCV_LIBS} ${TRITON_SERVER_LIBS} ${GST_DEPEND_LIBS})
+#add_executable(N-1-N_sample sample/N-1-N_sample.cpp)
+#target_link_libraries(N-1-N_sample video_pipe ${OpenCV_LIBS} ${TRITON_SERVER_LIBS} ${GST_DEPEND_LIBS})
 
-add_executable(N-N_sample sample/N-N_sample.cpp)
-target_link_libraries(N-N_sample video_pipe ${OpenCV_LIBS} ${TRITON_SERVER_LIBS} ${GST_DEPEND_LIBS})
+#add_executable(N-N_sample sample/N-N_sample.cpp)
+#target_link_libraries(N-N_sample video_pipe ${OpenCV_LIBS} ${TRITON_SERVER_LIBS} ${GST_DEPEND_LIBS})
 
 # add_executable(paddle_infer_sample sample/paddle_infer_sample.cpp)
 # target_link_libraries(paddle_infer_sample video_pipe ${OpenCV_LIBS} ${TRITON_SERVER_LIBS} ${GST_DEPEND_LIBS})
 
-add_executable(src_des_sample sample/src_des_sample.cpp)
-target_link_libraries(src_des_sample video_pipe ${OpenCV_LIBS} ${TRITON_SERVER_LIBS} ${GST_DEPEND_LIBS})
+#add_executable(src_des_sample sample/src_des_sample.cpp)
+#target_link_libraries(src_des_sample video_pipe ${OpenCV_LIBS} ${TRITON_SERVER_LIBS} ${GST_DEPEND_LIBS})
 
-add_executable(trt_infer_sample sample/trt_infer_sample.cpp)
-target_link_libraries(trt_infer_sample video_pipe ${OpenCV_LIBS} ${TRITON_SERVER_LIBS} ${GST_DEPEND_LIBS})
+#add_executable(trt_infer_sample sample/trt_infer_sample.cpp)
+#target_link_libraries(trt_infer_sample video_pipe ${OpenCV_LIBS} ${TRITON_SERVER_LIBS} ${GST_DEPEND_LIBS})
 
-add_executable(vp_logger_sample sample/vp_logger_sample.cpp)
-target_link_libraries(vp_logger_sample video_pipe ${OpenCV_LIBS} ${TRITON_SERVER_LIBS} ${GST_DEPEND_LIBS})
+#add_executable(vp_logger_sample sample/vp_logger_sample.cpp)
+#target_link_libraries(vp_logger_sample video_pipe ${OpenCV_LIBS} ${TRITON_SERVER_LIBS} ${GST_DEPEND_LIBS})
 
-add_executable(face_tracking_sample sample/face_tracking_sample.cpp)
-target_link_libraries(face_tracking_sample video_pipe ${OpenCV_LIBS} ${TRITON_SERVER_LIBS} ${GST_DEPEND_LIBS})
+#add_executable(face_tracking_sample sample/face_tracking_sample.cpp)
+#target_link_libraries(face_tracking_sample video_pipe ${OpenCV_LIBS} ${TRITON_SERVER_LIBS} ${GST_DEPEND_LIBS})
 
-add_executable(interaction_with_pipe_sample sample/interaction_with_pipe_sample.cpp)
-target_link_libraries(interaction_with_pipe_sample video_pipe ${OpenCV_LIBS} ${TRITON_SERVER_LIBS} ${GST_DEPEND_LIBS})
+#add_executable(interaction_with_pipe_sample sample/interaction_with_pipe_sample.cpp)
+#target_link_libraries(interaction_with_pipe_sample video_pipe ${OpenCV_LIBS} ${TRITON_SERVER_LIBS} ${GST_DEPEND_LIBS})
 
-add_executable(message_broker_sample sample/message_broker_sample.cpp)
-target_link_libraries(message_broker_sample video_pipe ${OpenCV_LIBS} ${TRITON_SERVER_LIBS} ${GST_DEPEND_LIBS})
+#add_executable(message_broker_sample sample/message_broker_sample.cpp)
+#target_link_libraries(message_broker_sample video_pipe ${OpenCV_LIBS} ${TRITON_SERVER_LIBS} ${GST_DEPEND_LIBS})
 
-add_executable(message_broker_sample2 sample/message_broker_sample2.cpp)
-target_link_libraries(message_broker_sample2 video_pipe ${OpenCV_LIBS} ${TRITON_SERVER_LIBS} ${GST_DEPEND_LIBS})
+#add_executable(message_broker_sample2 sample/message_broker_sample2.cpp)
+#target_link_libraries(message_broker_sample2 video_pipe ${OpenCV_LIBS} ${TRITON_SERVER_LIBS} ${GST_DEPEND_LIBS})
 
-add_executable(vehicle_tracking_sample sample/vehicle_tracking_sample.cpp)
-target_link_libraries(vehicle_tracking_sample video_pipe ${OpenCV_LIBS} ${TRITON_SERVER_LIBS} ${GST_DEPEND_LIBS})
+#add_executable(vehicle_tracking_sample sample/vehicle_tracking_sample.cpp)
+#target_link_libraries(vehicle_tracking_sample video_pipe ${OpenCV_LIBS} ${TRITON_SERVER_LIBS} ${GST_DEPEND_LIBS})
 
-add_executable(record_sample sample/record_sample.cpp)
-target_link_libraries(record_sample video_pipe ${OpenCV_LIBS} ${TRITON_SERVER_LIBS} ${GST_DEPEND_LIBS})
+#add_executable(record_sample sample/record_sample.cpp)
+#target_link_libraries(record_sample video_pipe ${OpenCV_LIBS} ${TRITON_SERVER_LIBS} ${GST_DEPEND_LIBS})
 
 add_executable(triton_infer_sample sample/triton_infer_sample.cpp)
 target_link_libraries(triton_infer_sample video_pipe ${OpenCV_LIBS} ${TRITON_SERVER_LIBS} ${GST_DEPEND_LIBS})
@@ -124,5 +121,5 @@ target_link_libraries(triton_infer_sample video_pipe ${OpenCV_LIBS} ${TRITON_SER
 add_executable(1-1-1_tritonserver_sample sample/1-1-1_tritonserver_sample.cpp)
 target_link_libraries(1-1-1_tritonserver_sample video_pipe ${OpenCV_LIBS} ${TRITON_SERVER_LIBS} ${GST_DEPEND_LIBS})
 
-add_executable(triton_infer_video_sample sample/triton_infer_video_sample.cpp)
-target_link_libraries(triton_infer_video_sample video_pipe ${OpenCV_LIBS} ${TRITON_SERVER_LIBS} ${GST_DEPEND_LIBS})
+#add_executable(triton_infer_video_sample sample/triton_infer_video_sample.cpp)
+#target_link_libraries(triton_infer_video_sample video_pipe ${OpenCV_LIBS} ${TRITON_SERVER_LIBS} ${GST_DEPEND_LIBS})
