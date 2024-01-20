@@ -7,56 +7,46 @@
 </p>
 
 ## 本地编译步骤
-### 1 拉取deepstream-triton 6.0镜像
+### 1 安装依赖
 ```
-docker pull nvcr.io/nvidia/deepstream:6.0-triton   主机系统需要为ubuntu18.04
-or 
-docker pull nvcr.io/nvidia/deepstream:6.4-triton-multiarch      主机系统需要为ubuntu22.04
+sudo apt-get install cmake
+sudo apt-get install libgstrtspserver-1.0-dev gstreamer1.0-rtsp
+sudo apt-get install libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev gstreamer1.0-libav gstreamer1.0-tools
+
 ```
 
 ### 2 下载video_pipe_c代码
 ```
+cd /data/github_codes
 git clone https://github.com/zjd1988/video_pipe_c.git
 ```
 
 ### 3 下载opencv 代码
 ```
-cd video_pipe_c
+cd /data/github_codes/video_pipe_c
 wget -O opencv.zip https://github.com/opencv/opencv/archive/4.6.0.zip
 wget -O opencv_contrib.zip https://github.com/opencv/opencv_contrib/archive/4.6.0.zip
 unzip opencv.zip
 unzip opencv_contrib.zip
 ```
 
-### 4 启动docker 镜像，进行编译
+### 4 进行编译
 ```
-cd video_pipe_c
-docker run --gpus all -it -v $PWD:/video_pipe_c  nvcr.io/nvidia/deepstream:6.0-triton /bin/bash
-or 
-docker run --gpus all -it -v $PWD:/video_pipe_c  nvcr.io/nvidia/deepstream:6.4-triton-multiarch /bin/bash
-apt-get install cmake
 <!-- build opencv 4.6.0 -->
-cd /video_pipe_c/opencv-4.6.0
+cd /data/github_codes/video_pipe_c/opencv-4.6.0
 mkdir build && cd build
-<!-- build opencv with cuda, for example rtx3090 -->
-cmake -DCMAKE_BUILD_TYPE=RELEASE -DCMAKE_INSTALL_PREFIX=/video_pipe_c/opencv-4.6.0/install \
-    -DOPENCV_ENABLE_NONFREE=ON -DWITH_CUDA=ON -DWITH_CUDNN=ON -DWITH_TBB=ON -DOPENCV_DNN_CUDA=ON \
-    -DENABLE_FAST_MATH=1 -DCUDA_FAST_MATH=1 -DWITH_CUBLAS=1 -DOPENCV_GENERATE_PKGCONFIG=ON \
-    -DOPENCV_EXTRA_MODULES_PATH=/video_pipe_c/opencv_contrib-4.6.0/modules -DWITH_WEBP=OFF \
-    -DWITH_OPENCL=OFF -DETHASHLCL=OFF -DENABLE_CXX11=ON -DBUILD_EXAMPLES=OFF -DOPENCV_ENABLE_NONFREE=ON \
-    -DWITH_GSTREAMER=ON -DWITH_V4L=ON CUDA_ARCH_BIN="8.6" ..
 
-<!-- build opencv without cuda -->
-cmake -DCMAKE_BUILD_TYPE=RELEASE -DCMAKE_INSTALL_PREFIX=/video_pipe_c/opencv-4.6.0/install \
+cmake -DCMAKE_BUILD_TYPE=RELEASE -DCMAKE_INSTALL_PREFIX=$PWD/../install \
     -DOPENCV_ENABLE_NONFREE=ON -DWITH_TBB=ON -DENABLE_FAST_MATH=1 -DOPENCV_GENERATE_PKGCONFIG=ON \
-    -DOPENCV_EXTRA_MODULES_PATH=/video_pipe_c/opencv_contrib-4.6.0/modules -DWITH_WEBP=OFF \
+    -DOPENCV_EXTRA_MODULES_PATH=$PWD/../../opencv_contrib-4.6.0/modules -DWITH_WEBP=OFF \
     -DWITH_OPENCL=OFF -DETHASHLCL=OFF -DENABLE_CXX11=ON -DBUILD_EXAMPLES=OFF -DOPENCV_ENABLE_NONFREE=ON \
-    -DWITH_GSTREAMER=ON -DWITH_V4L=ON ..
+    -DWITH_GSTREAMER=ON -DWITH_V4L=ON -DBUILD_PNG=ON -DWITH_FREETYPE ..
+
 make -j8 && make install
 
 <!-- build video_pipe_c -->
-cd /video_pipe_c
-mkdir build_x64 && cd build_x64
+cd /data/github_codes/video_pipe_c
+mkdir build_arm64 && cd build_arm64
 cmake .. && make -j4
 
 注：因为镜像中opencv版本为4.2，加载人脸模型时会报错，所以需要安装大于4.5的版本，本地我是按4.6编译安装
@@ -64,8 +54,8 @@ cmake .. && make -j4
 
 ### 5 测试
 ```
-cd /video_pipe_c/build_x64
-./triton_infer_sample
+cd /data/github_codes/video_pipe_c/build_arm64
+./1-1-1_tritonserver_sample
 ```
 
 ## docker编译步骤
