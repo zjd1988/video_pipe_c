@@ -47,7 +47,8 @@ make -j8 && make install
 <!-- build video_pipe_c -->
 cd /data/github_codes/video_pipe_c
 mkdir build_arm64 && cd build_arm64
-cmake .. && make -j4
+cmake -DLOCAL_OPENCV_DIR=$PWD/../opencv-4.6.0/install/lib/cmake/opencv4 -DLOCAL_TRITONSERVER_DIR=/data/github_codes/server/build ..
+make -j4
 
 注：因为镜像中opencv版本为4.2，加载人脸模型时会报错，所以需要安装大于4.5的版本，本地我是按4.6编译安装
 ```
