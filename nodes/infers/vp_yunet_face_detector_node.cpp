@@ -30,9 +30,12 @@ namespace vp_nodes {
         auto& frame_meta = frame_meta_with_batch[0];
 
         // Extract from output_blobs
-        Mat loc = raw_outputs[2];
-        Mat conf = raw_outputs[0];
-        Mat iou = raw_outputs[1];
+        Mat loc = raw_outputs[0];
+        Mat conf = raw_outputs[1];
+        Mat iou = raw_outputs[2];
+        // Mat loc = raw_outputs[2];
+        // Mat conf = raw_outputs[0];
+        // Mat iou = raw_outputs[1];
 
         // we need generate priors if input size changed or priors is not initialized
         if (loc.rows != priors.size()) {

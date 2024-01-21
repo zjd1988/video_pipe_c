@@ -23,15 +23,15 @@ int main() {
     VP_SET_LOG_INCLUDE_THREAD_ID(false);
     VP_LOGGER_INIT();
     VP_SET_LOG_LEVEL(vp_utils::vp_log_level::INFO);
-    // TRITON_SERVER_INIT("/data/github_codes/video_pipe_c/face_models", 0);
+    TRITON_SERVER_CUSTOM_INIT("/data/github_codes/video_pipe_c/face_models", 0, "/data/github_codes/server/build/opt/tritonserver/backends", "/data/github_codes/server/build/opt/tritonserver/repoagents");
 
     // create nodes
     auto file_src_0 = std::make_shared<vp_nodes::vp_file_src_node>("file_src_0", 0, "/data/github_codes/video_pipe_c/test_video/test.avi");
-    // auto yunet_face_detector_0 = std::make_shared<vp_nodes::vp_yunet_face_detector_node>("yunet_face_detector_0", 
-    //    "/data/github_codes/video_pipe_c/face_models/face_detect/1/model.onnx", "face_detect", 1);
+    auto yunet_face_detector_0 = std::make_shared<vp_nodes::vp_yunet_face_detector_node>("yunet_face_detector_0", 
+       "/data/github_codes/video_pipe_c/face_models/face_detect/1/model.onnx", "face_detect", 1);
 
-    auto yunet_face_detector_0 = std::make_shared<vp_nodes::vp_yunet_face_detector_node>("yunet_face_detector_0",
-        "/data/github_codes/video_pipe_c/face_models/face_detect/1/model.onnx");
+    // auto yunet_face_detector_0 = std::make_shared<vp_nodes::vp_yunet_face_detector_node>("yunet_face_detector_0",
+    //    "/data/github_codes/video_pipe_c/face_models/face_detect/1/model.onnx");
 
     auto osd_0 = std::make_shared<vp_nodes::vp_face_osd_node>("osd_0");
     auto screen_des_0 = std::make_shared<vp_nodes::vp_screen_des_node>("screen_des_0", 0);
@@ -48,7 +48,7 @@ int main() {
     {
         std::this_thread::sleep_for(std::chrono::milliseconds(5000));
     }
-    // TRITON_SERVER_UNINIT();
+    TRITON_SERVER_UNINIT();
 #endif
     return 0;
 }

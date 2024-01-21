@@ -12,6 +12,7 @@
 sudo apt-get install cmake
 sudo apt-get install libgstrtspserver-1.0-dev gstreamer1.0-rtsp
 sudo apt-get install libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev gstreamer1.0-libav gstreamer1.0-tools
+按照https://github.com/zjd1988/rknn_backend.git r23.12 编译tritonserver
 
 ```
 
@@ -58,7 +59,6 @@ make -j4
 cd /data/github_codes/video_pipe_c/build_arm64
 ./1-1-1_tritonserver_sample
 ```
-
 
 ## VideoPipe
 

@@ -447,7 +447,8 @@ namespace vp_utils
         m_server.reset();
     }
 
-    void TritonServerInfer::init(std::string model_repository_path, int verbose_level, int timeout)
+    void TritonServerInfer::init(const std::string model_repository_path, int verbose_level, 
+        const std::string backends_path, const std::string repo_agent_path, int timeout)
     {
         FAIL_IF_ERR(TRITONSERVER_ApiVersion(&m_api_version_major, &m_api_version_minor), 
             "getting Triton API version");
@@ -462,15 +463,15 @@ namespace vp_utils
         TRITONSERVER_ServerOptions* server_options = nullptr;
         FAIL_IF_ERR(TRITONSERVER_ServerOptionsNew(&server_options),
             "creating server options");
-        FAIL_IF_ERR(TRITONSERVER_ServerOptionsSetModelRepositoryPath(server_options, model_repository_path.c_str()),
+        FAIL_IF_ERR(TRITONSERVER_ServerOptionsSetModelRepositoryPath(server_options, model_repository_path.c_str()), 
             "setting model repository path");
-        FAIL_IF_ERR(TRITONSERVER_ServerOptionsSetLogVerbose(server_options, verbose_level),
+        FAIL_IF_ERR(TRITONSERVER_ServerOptionsSetLogVerbose(server_options, verbose_level), 
             "setting verbose logging level");
-        FAIL_IF_ERR(TRITONSERVER_ServerOptionsSetBackendDirectory(server_options, "/opt/tritonserver/backends"),
+        FAIL_IF_ERR(TRITONSERVER_ServerOptionsSetBackendDirectory(server_options, backends_path.c_str()), 
             "setting backend directory");
-        FAIL_IF_ERR(TRITONSERVER_ServerOptionsSetRepoAgentDirectory(server_options, "/opt/tritonserver/repoagents"),
+        FAIL_IF_ERR(TRITONSERVER_ServerOptionsSetRepoAgentDirectory(server_options, repo_agent_path.c_str()), 
             "setting repository agent directory");
-        FAIL_IF_ERR(TRITONSERVER_ServerOptionsSetStrictModelConfig(server_options, true),
+        FAIL_IF_ERR(TRITONSERVER_ServerOptionsSetStrictModelConfig(server_options, true), 
             "setting strict model configuration");
 
     #ifdef TRITON_ENABLE_GPU
@@ -661,6 +662,7 @@ namespace vp_utils
                 std::to_string(output_count) + " for model " + model_key);
         }
 
+        output_tensors.resize(output_count);
         for (uint32_t idx = 0; idx < output_count; ++idx)
         {
             const char* cname;
@@ -681,14 +683,15 @@ namespace vp_utils
             {
                 FAIL("unable to get output name for model " + model_key);
             }
-            std::string output_name = model_info.outputs[idx];
             std::string name(cname);
-            if (name != output_name)
+            auto output_it = std::find(model_info.outputs.begin(), model_info.outputs.end(), name);
+            if (output_it == model_info.outputs.end())
             {
                 FAIL("unexpected output '" + name + "' for model " + model_key);
             }
+            uint32_t output_index = std::distance(model_info.outputs.begin(), output_it);
 
-            auto expected_datatype = model_info.outputs_datatype[idx];
+            auto expected_datatype = model_info.outputs_datatype[output_index];
             if (datatype != expected_datatype)
             {
                 FAIL("unexpected datatype '" + std::string(TRITONSERVER_DataTypeString(datatype)) + "' for '" +
@@ -734,7 +737,7 @@ namespace vp_utils
                 default:
                     FAIL("unexpected memory type for model " + model_key);
             }
-            output_tensors.push_back(output_tensor);
+            output_tensors[output_index] = output_tensor;
         }
         return;
     }
@@ -871,6 +874,7 @@ namespace vp_utils
                 std::to_string(output_count) + " for model " + model_key);
         }
 
+        output_mats.resize(output_count);
         for (uint32_t idx = 0; idx < output_count; ++idx)
         {
             const char* cname;
@@ -891,14 +895,15 @@ namespace vp_utils
             {
                 FAIL("unable to get output name for model " + model_key);
             }
-            std::string output_name = model_info.outputs[idx];
             std::string name(cname);
-            if (name != output_name)
+            auto output_it = std::find(model_info.outputs.begin(), model_info.outputs.end(), name);
+            if (model_info.outputs.end() == output_it)
             {
                 FAIL("unexpected output '" + name + "' for model " + model_key);
             }
+            uint32_t output_index = std::distance(model_info.outputs.begin(), output_it);
 
-            auto expected_datatype = model_info.outputs_datatype[idx];
+            auto expected_datatype = model_info.outputs_datatype[output_index];
             if (datatype != expected_datatype)
             {
                 FAIL("unexpected datatype '" + std::string(TRITONSERVER_DataTypeString(datatype)) + "' for '" +
@@ -945,7 +950,7 @@ namespace vp_utils
                 default:
                     FAIL("unexpected memory type for model " + model_key);
             }
-            output_mats.push_back(output_mat);
+            output_mats[output_index] = output_mat;
         }
         return;
     }
