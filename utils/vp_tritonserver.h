@@ -46,11 +46,11 @@ namespace vp_utils
         std::vector<std::vector<int64_t>>       outputs_dims;
     } ModelInfo;
 
-    // #define TRITON_SERVER_INIT(model_repository_path, verbose_level) \
-    //     new vp_utils::TritonServerInfer(model_repository_path, verbose_level)
-
-    #define TRITON_SERVER_INIT(model_repository_path, verbose_level) \
+    #define TRITON_SERVER_DEFAULT_INIT(model_repository_path, verbose_level) \
         vp_utils::TritonServerInfer::Instance().init(model_repository_path, verbose_level)
+
+    #define TRITON_SERVER_CUSTOM_INIT(model_repository_path, verbose_level, backends_path, repo_agent_path) \
+        vp_utils::TritonServerInfer::Instance().init(model_repository_path, verbose_level, backends_path, repo_agent_path)
 
     #define TRITON_SERVER_INFER(model_name, model_version, inputs, outputs) \
         vp_utils::TritonServerInfer::Instance().infer(model_name, model_version, inputs, outputs)
@@ -61,7 +61,10 @@ namespace vp_utils
     {
     public:
         static TritonServerInfer& Instance();
-        void init(std::string model_repository_path, int verbose_level = 0, int timeout = 500);
+        void init(const std::string model_repository_path, int verbose_level = 0, 
+            const std::string backends_path = "/opt/tritonserver/backends", 
+            const std::string repo_agent_path = "/opt/tritonserver/repoagents", 
+            int timeout = 500);
         void uninit();
         // TritonServerInfer(std::string model_repository_path, int verbose_level = 0, int timeout = 500);
         // ~TritonServerInfer() = default;

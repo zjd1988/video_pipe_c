@@ -18,7 +18,7 @@ int main()
     VP_LOGGER_INIT();
 
     VP_INFO("init triton server infer");
-    TRITON_SERVER_INIT("/video_pipe_c/models_test", 0);
+    TRITON_SERVER_DEFAULT_INIT("/video_pipe_c/models_test", 0);
 
     uint32_t test_count = 1;
     std::string model_name = "test";   // yolov7 end2end onnx model

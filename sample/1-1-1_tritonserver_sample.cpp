@@ -22,7 +22,7 @@ int main() {
     VP_SET_LOG_INCLUDE_THREAD_ID(false);
     VP_LOGGER_INIT();
     VP_SET_LOG_LEVEL(vp_utils::vp_log_level::INFO);
-    TRITON_SERVER_INIT("/models", 0);
+    TRITON_SERVER_DEFAULT_INIT("/models", 0);
 
     // create nodes
     auto file_src_0 = std::make_shared<vp_nodes::vp_file_src_node>("file_src_0", 0, "/video_pipe_c/test_video/test.avi");

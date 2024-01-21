@@ -57,7 +57,7 @@ make -j8 && make install
 <!-- build video_pipe_c -->
 cd /video_pipe_c
 mkdir build_x64 && cd build_x64
-cmake .. && make -j4
+cmake -DOpenCV_DIR=/video_pipe_c/opencv-4.6.0 .. && make -j4
 
 注：因为镜像中opencv版本为4.2，加载人脸模型时会报错，所以需要安装大于4.5的版本，本地我是按4.6编译安装
 ```
@@ -65,7 +65,9 @@ cmake .. && make -j4
 ### 5 测试
 ```
 cd /video_pipe_c/build_x64
-./triton_infer_sample
+./1-1-1_tritonserver_sample
+
+使用gst-launch-1.0 rtspsrc location=rtsp://localhost:8000/rtsp_0 latency=0 ! decodebin ! fakesink 拉流测试
 ```
 
 ## docker编译步骤
