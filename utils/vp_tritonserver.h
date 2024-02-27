@@ -38,6 +38,7 @@ namespace vp_utils
     {
         std::string                             name;
         std::string                             version;
+        std::string                             platform;
         std::vector<std::string>                inputs;
         std::vector<std::string>                outputs;
         std::vector<TRITONSERVER_DataType>      inputs_datatype;
@@ -51,6 +52,9 @@ namespace vp_utils
 
     #define TRITON_SERVER_CUSTOM_INIT(model_repository_path, verbose_level, backends_path, repo_agent_path) \
         vp_utils::TritonServerInfer::Instance().init(model_repository_path, verbose_level, backends_path, repo_agent_path)
+
+    #define TRITON_SERVER_GET_MODEL_PLATFORM(model_name, model_version) \
+        vp_utils::TritonServerInfer::Instance().getModelPlatform(model_name, model_version)
 
     #define TRITON_SERVER_INFER(model_name, model_version, inputs, outputs) \
         vp_utils::TritonServerInfer::Instance().infer(model_name, model_version, inputs, outputs)
@@ -66,6 +70,7 @@ namespace vp_utils
             const std::string repo_agent_path = "/opt/tritonserver/repoagents", 
             int timeout = 500);
         void uninit();
+        std::string getModelPlatform(const std::string model_name, const std::string model_version);
         // TritonServerInfer(std::string model_repository_path, int verbose_level = 0, int timeout = 500);
         // ~TritonServerInfer() = default;
         void infer(const std::string model_name, const std::string model_version, 

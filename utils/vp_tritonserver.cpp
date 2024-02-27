@@ -608,6 +608,8 @@ namespace vp_utils
                 FAIL_IF_ERR(TRITONSERVER_MessageDelete(model_metadata_message),
                     "deleting model metadata message");
 
+                std::string model_platform = model_metadata["platform"].GetString();
+                model_info.platform = model_platform;
                 // check model name
                 if (strcmp(model_metadata["name"].GetString(), model_name.c_str()))
                 {
@@ -644,6 +646,18 @@ namespace vp_utils
             }
         }
         return;
+    }
+
+    std::string TritonServerInfer::getModelPlatform(const std::string model_name, const std::string model_version)
+    {
+        // check model exists
+        std::string model_key = model_name + ":" + model_version;
+        if (m_models_info.end() == m_models_info.find(model_key))
+        {
+            FAIL("cannot not find model info for " + model_key);
+        }
+        const ModelInfo& model_info = m_models_info[model_key];
+        return model_info.platform;
     }
 
     void TritonServerInfer::parseModelInferResponse(TRITONSERVER_InferenceResponse* response, 

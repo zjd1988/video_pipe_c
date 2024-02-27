@@ -18,7 +18,7 @@ int main()
     VP_LOGGER_INIT();
 
     VP_INFO("init triton server infer");
-    TRITON_SERVER_INIT("/models", 0);
+    TRITON_SERVER_DEFAULT_INIT("/models", 0);
 
     std::string model_name = "face_detect";
     std::string model_version = "1";

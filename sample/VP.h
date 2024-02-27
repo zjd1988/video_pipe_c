@@ -35,6 +35,7 @@
 #define ba_crossline_sample 0
 #define triton_infer_sample 1
 #define _1_1_1_tritonserver_sample 1
+#define _1_1_1_yolo_tritonserver_sample 1
 
 #define multi_infer_test 0
 #define image_des_test 0
