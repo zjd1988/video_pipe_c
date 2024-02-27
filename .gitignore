@@ -16,11 +16,9 @@ __pycache__/
 *.cfg
 *.caffemodel
 *.prototxt
-*.mp4
 *.weights
 *.h264
 *.trt
-test_video/
 log/
 debug/
 

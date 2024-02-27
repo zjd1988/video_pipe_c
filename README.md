@@ -30,14 +30,19 @@ unzip opencv_contrib.zip
 
 ### 4 启动docker 镜像，进行编译
 ```
+<!-- start docker image -->
 cd video_pipe_c
 docker run --gpus all -it -v $PWD:/video_pipe_c  nvcr.io/nvidia/deepstream:6.0-triton /bin/bash
 or 
 docker run --gpus all -it -v $PWD:/video_pipe_c  nvcr.io/nvidia/deepstream:6.4-triton-multiarch /bin/bash
-apt-get install cmake
+
+<!-- install cmake -->
+apt-get update && apt-get install cmake
+
 <!-- build opencv 4.6.0 -->
 cd /video_pipe_c/opencv-4.6.0
 mkdir build && cd build
+
 <!-- build opencv with cuda, for example rtx3090 -->
 cmake -DCMAKE_BUILD_TYPE=RELEASE -DCMAKE_INSTALL_PREFIX=/video_pipe_c/opencv-4.6.0/install \
     -DOPENCV_ENABLE_NONFREE=ON -DWITH_CUDA=ON -DWITH_CUDNN=ON -DWITH_TBB=ON -DOPENCV_DNN_CUDA=ON \
@@ -52,6 +57,7 @@ cmake -DCMAKE_BUILD_TYPE=RELEASE -DCMAKE_INSTALL_PREFIX=/video_pipe_c/opencv-4.6
     -DOPENCV_EXTRA_MODULES_PATH=/video_pipe_c/opencv_contrib-4.6.0/modules -DWITH_WEBP=OFF \
     -DWITH_OPENCL=OFF -DETHASHLCL=OFF -DENABLE_CXX11=ON -DBUILD_EXAMPLES=OFF -DOPENCV_ENABLE_NONFREE=ON \
     -DWITH_GSTREAMER=ON -DWITH_V4L=ON ..
+
 make -j8 && make install
 
 <!-- build video_pipe_c -->
