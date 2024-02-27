@@ -1,0 +1,34 @@
+name: "yolov5_onnx"
+backend: "onnxruntime"
+max_batch_size : 1
+input [
+  {
+    name: "images"
+    data_type: TYPE_UINT8
+    dims: [ 3, 640, 640 ]
+  }
+]
+output [
+  {
+    name: "output"
+    data_type: TYPE_FP32
+    dims: [ 255, 80, 80 ]
+  },
+  {
+    name: "286"
+    data_type: TYPE_FP32
+    dims: [ 255, 40, 40 ]
+  },
+  {
+    name: "288"
+    data_type: TYPE_FP32
+    dims: [ 255, 20, 20 ]
+  }
+]
+instance_group [
+  {
+    count: 1
+    kind: KIND_CPU
+    gpus: [ 0 ]
+  }
+]

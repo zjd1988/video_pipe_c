@@ -14,14 +14,12 @@ __pycache__/
 
 # model and video
 *.cfg
-*.onnx
 *.caffemodel
 *.prototxt
 *.mp4
 *.weights
 *.h264
 *.trt
-models/
 test_video/
 log/
 debug/
