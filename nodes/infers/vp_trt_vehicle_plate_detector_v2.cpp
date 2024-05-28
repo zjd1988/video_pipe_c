@@ -1,4 +1,4 @@
-
+#ifdef VP_WITH_TRT
 #include "vp_trt_vehicle_plate_detector_v2.h"
 
 namespace vp_nodes {
@@ -12,7 +12,7 @@ namespace vp_nodes {
     }
     
     vp_trt_vehicle_plate_detector_v2::~vp_trt_vehicle_plate_detector_v2() {
-
+        deinitialized();
     }
 
     void vp_trt_vehicle_plate_detector_v2::postprocess(const std::vector<cv::Mat>& raw_outputs, const std::vector<std::shared_ptr<vp_objects::vp_frame_meta>>& frame_meta_with_batch) {
@@ -72,3 +72,4 @@ namespace vp_nodes {
         vp_infer_node::infer_combinations_time_cost(mats_to_infer.size(), prepare_time.count(), 0, infer_time.count(), 0);
     }
 }
+#endif

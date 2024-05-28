@@ -39,8 +39,10 @@ namespace vp_nodes {
         // failing means maybe it has a custom implementation for model loading in derived class such as using other backends other than opencv::dnn.
         try {
             net = cv::dnn::readNet(model_path, model_config_path);
+            #ifdef VP_WITH_CUDA
             net.setPreferableBackend(cv::dnn::DNN_BACKEND_CUDA);
             net.setPreferableTarget(cv::dnn::DNN_TARGET_CUDA);
+            #endif
         }
         catch(const std::exception& e) {
             VP_WARN(vp_utils::string_format("[%s] cv::dnn::readNet load network failed!", node_name.c_str()));
@@ -89,7 +91,7 @@ namespace vp_nodes {
         if (number_of_batch <= batch_size) {
             // infer one time directly
             net.setInput(blob_to_infer);
-            net.forward(raw_outputs/*, net.getUnconnectedOutLayersNames()*/);
+            net.forward(raw_outputs, net.getUnconnectedOutLayersNames());
         }
         else {
             // infer more times
@@ -103,7 +105,7 @@ namespace vp_nodes {
                 std::vector<cv::Mat> b_outputs;
 
                 net.setInput(b_blob);
-                net.forward(b_outputs/*, net.getUnconnectedOutLayersNames()*/);
+                net.forward(b_outputs, net.getUnconnectedOutLayersNames());
 
                 // first time, initialize it
                 if (raw_outputs.size() == 0) {

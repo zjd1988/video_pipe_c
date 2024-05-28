@@ -11,18 +11,20 @@ namespace vp_nodes {
                         std::string rtsp_name, 
                         vp_objects::vp_size resolution_w_h, 
                         int bitrate,
-                        bool osd):
+                        bool osd,
+                        std::string gst_encoder_name):
                         vp_des_node(node_name, channel_index),
                         rtsp_port(rtsp_port),
                         rtsp_name(rtsp_name),
                         resolution_w_h(resolution_w_h),
                         bitrate(bitrate),
-                        osd(osd) {
+                        osd(osd),
+                        gst_encoder_name(gst_encoder_name) {
         if (rtsp_name.empty()) {
             // use channel index as rtsp name
             this->rtsp_name = std::to_string(channel_index);
         }
-        gst_template = vp_utils::string_format(gst_template, bitrate, base_udp_port + channel_index);
+        gst_template = vp_utils::string_format(gst_template, gst_encoder_name.c_str(), bitrate, base_udp_port + channel_index);
         VP_INFO(vp_utils::string_format("[%s] [%s]", node_name.c_str(), gst_template.c_str()));
 
         // start rtsp server asynchronously
@@ -32,6 +34,7 @@ namespace vp_nodes {
     }
     
     vp_rtsp_des_node::~vp_rtsp_des_node() { 
+        deinitialized();
     }
     GstRTSPServer* vp_rtsp_des_node::rtsp_server = NULL;
     std::shared_ptr<vp_objects::vp_meta> vp_rtsp_des_node::handle_frame_meta(std::shared_ptr<vp_objects::vp_frame_meta> meta) {

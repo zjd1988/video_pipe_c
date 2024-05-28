@@ -5,14 +5,14 @@ namespace vp_nodes {
         
     vp_secondary_infer_node::vp_secondary_infer_node(std::string node_name, 
                             std::string model_path, 
-                            std::string model_name, 
-                            int         model_version, 
                             std::string model_config_path, 
                             std::string labels_path, 
                             int input_width, 
                             int input_height, 
                             int batch_size,
                             std::vector<int> p_class_ids_applied_to,
+                            int min_width_applied_to,
+                            int min_height_applied_to,
                             int crop_padding,
                             float scale,
                             cv::Scalar mean,
@@ -22,8 +22,6 @@ namespace vp_nodes {
                             vp_infer_node(node_name, 
                                         vp_nodes::vp_infer_type::SECONDARY, 
                                         model_path, 
-                                        model_name, 
-                                        model_version, 
                                         model_config_path, 
                                         labels_path, 
                                         input_width, 
@@ -35,6 +33,8 @@ namespace vp_nodes {
                                         swap_rb,
                                         swap_chn),
                             p_class_ids_applied_to(p_class_ids_applied_to),
+                            min_width_applied_to(min_width_applied_to),
+                            min_height_applied_to(min_height_applied_to),
                             crop_padding(crop_padding) {
     }
     
@@ -51,7 +51,7 @@ namespace vp_nodes {
         // batch by batch inside single frame
         for (auto& i : frame_meta->targets) {
             // check if we need infer on the target
-            if (!need_apply(i->primary_class_id)) {
+            if (!need_apply(i->primary_class_id, i->width, i->height)) {
                 continue;
             }
             
@@ -71,7 +71,11 @@ namespace vp_nodes {
         }
     }
 
-    bool vp_secondary_infer_node::need_apply(int primary_class_id) {
+    bool vp_secondary_infer_node::need_apply(int primary_class_id, int target_width, int target_height) {
+        if (target_width < min_width_applied_to || target_height < min_height_applied_to) {
+            return false;
+        }
+        
         if (p_class_ids_applied_to.size() == 0) {
             return true;
         }

@@ -16,6 +16,13 @@ namespace vp_nodes {
     }
     
     vp_msg_broker_node::~vp_msg_broker_node() {
+
+    }
+
+    void vp_msg_broker_node::stop_broking() {
+        broking = false;
+        frames_to_broke.push(nullptr);   // send dead flag to broking_thread
+        broking_cache_semaphore.signal();
         if (broking_th.joinable()) {
             broking_th.join();
         }
@@ -48,19 +55,29 @@ namespace vp_nodes {
     }
 
     void vp_msg_broker_node::broking_run() {
-        while (true) {
+        while (broking) {
             // it is a consumer
             broking_cache_semaphore.wait();
 
             auto frame_meta = frames_to_broke.front();
             frames_to_broke.pop();
 
+            // dead flag
+            if (frame_meta == nullptr) {
+                continue;
+            }
+            
             // message to be broked
             std::string message;
 
             // step 1, format message
             format_msg(frame_meta, message);  // MUST be implemented in child class
 
+            // ignore if message is empty, because no broking occurs is allowed for some frames if some conditions not satisfied
+            if (message.empty()) {
+                continue;
+            }
+            
             // step 2, broke message
             broke_msg(message);               // MUST be implemented in child class
         }

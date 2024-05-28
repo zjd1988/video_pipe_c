@@ -10,8 +10,7 @@ namespace vp_nodes {
                                 track_for(track_for) {
     }
     
-    vp_track_node::~vp_track_node()
-    {
+    vp_track_node::~vp_track_node() {
     }
 
     std::shared_ptr<vp_objects::vp_meta> vp_track_node::handle_control_meta(std::shared_ptr<vp_objects::vp_control_meta> meta) {
@@ -19,12 +18,9 @@ namespace vp_nodes {
     }
 
     std::shared_ptr<vp_objects::vp_meta> vp_track_node::handle_frame_meta(std::shared_ptr<vp_objects::vp_frame_meta> meta) {
-        // track for only 1 channel at the same time
-        if (channel_index == -1) {
-            channel_index = meta->channel_index;
-        }
-        assert(channel_index == meta->channel_index);
-        
+        // channel_index can be different each call
+        auto channel_index = meta->channel_index;
+
         // data used for tracking
         std::vector<vp_objects::vp_rect> rects;      // rects of targets
         std::vector<std::vector<float>> embeddings;  // embeddings of targets
@@ -33,8 +29,8 @@ namespace vp_nodes {
         // step 1, collect data
         preprocess(meta, rects, embeddings);
 
-        // step 2, track
-        track(rects, embeddings, track_ids);
+        // step 2, track by channel
+        track(channel_index, rects, embeddings, track_ids);
 
         // step 3, postprocess
         postprocess(meta, rects, embeddings, track_ids);
@@ -75,6 +71,10 @@ namespace vp_nodes {
         // assert(target_rects.size() == target_embeddings.size());
         assert(target_rects.size() == track_ids.size());
 
+        // support multi channels
+        auto& tracks_by_id = all_tracks_by_id[frame_meta->channel_index];
+        auto& last_tracked_frame_indexes = all_last_tracked_frame_indexes[frame_meta->channel_index];
+
         if (track_for == vp_track_for::NORMAL) {
             //assert(target_rects.size() == frame_meta->targets.size());
             for (int i = 0; i < frame_meta->targets.size(); i++) {
@@ -102,8 +102,11 @@ namespace vp_nodes {
 
                 // -1 means no track result returned yet
                 if (track_id != -1) {
-                    // no cache needed since no tracks field for vp_frame_face_target
-                    face->track_id = track_id;  // write track_id back to face target
+                    tracks_by_id[track_id].push_back(rect);                           // cache
+                    last_tracked_frame_indexes[track_id] = frame_meta->frame_index;   // update stamp
+
+                    face->track_id = track_id;                // write track_id back to face target
+                    face->tracks = tracks_by_id[track_id];    // write tracks back to face target
                 }
             }
         }

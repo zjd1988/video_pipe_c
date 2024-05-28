@@ -1,4 +1,4 @@
-
+#ifdef VP_WITH_TRT
 #include "vp_trt_vehicle_detector.h"
 
 namespace vp_nodes {
@@ -11,7 +11,7 @@ namespace vp_nodes {
     }
     
     vp_trt_vehicle_detector::~vp_trt_vehicle_detector() {
-
+        deinitialized();
     }
 
     // please refer to vp_infer_node::run_infer_combinations
@@ -61,3 +61,4 @@ namespace vp_nodes {
 
     }
 }
+#endif

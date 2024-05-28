@@ -1,40 +1,44 @@
-cmake_minimum_required(VERSION 2.6)
+#[[
+    prepare in advance：
+    1. OpenCV >= 4.6
+    2. Gstreamer >= 1.14.5
+    3. CUDA, TensorRT, PADDLE and others for optional
+]]
 
-project(video_pipe)
-
-add_definitions(-DAPI_EXPORTS)
-add_definitions(-O2 -pthread)
+cmake_minimum_required(VERSION 3.10)
+project(video_pipe VERSION 1.0)
 
 set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -Wall -Ofast -Wfatal-errors -D_MWAITXINTRIN_H_INCLUDED")
+set(CMAKE_BUILD_TYPE Debug)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -fPIC -w -fdiagnostics-color=always -pthread")
+# save all libs(including third_party's) to 'libs'
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/libs)
 
-# OpenCV
+# optional for build, modify values when configure the project using 'cmake -DVP_WITH_CUDA=OFF ..'
+option(VP_WITH_CUDA "prepared CUDA or not?" OFF)
+option(VP_WITH_TRT "prepared TensorRT or not?" OFF)
+option(VP_WITH_PADDLE "prepared PaddlePaddle or not?" OFF)
+option(VP_WITH_KAFKA "prepared Kafka or not?" OFF)
+option(VP_BUILD_COMPLEX_SAMPLES "build complex samples or not? (maybe source code not provided)" OFF)
+
+# OpenCV required
 find_package(OpenCV REQUIRED)
 message(STATUS "OpenCV library status:")
 message(STATUS "    version: ${OpenCV_VERSION}")
 message(STATUS "    libraries: ${OpenCV_LIBS}")
 message(STATUS "    include path: ${OpenCV_INCLUDE_DIRS}")
-include_directories( ${OpenCV_INCLUDE_DIRS} )
+include_directories(${OpenCV_INCLUDE_DIRS})
 
-# CUDA
-find_package(CUDA REQUIRED)
-message(STATUS "CUDA library status:")
-message(STATUS "    version: ${CUDA_VERSION}")
-message(STATUS "    libraries: ${CUDA_LIBRARIES}")
-message(STATUS "    include path: ${CUDA_INCLUDE_DIRS}")
-include_directories( ${CUDA_INCLUDE_DIRS} )
-
-# GST
-include(FindPkgConfig)# equals `pkg-config --cflags --libs gstreamer-1.0`
+# Gstreamer required
+include(FindPkgConfig)
 pkg_check_modules(GST   REQUIRED gstreamer-1.0)
 pkg_check_modules(GSTAPP REQUIRED gstreamer-app-1.0)
 pkg_check_modules(GST_RTSP REQUIRED gstreamer-rtsp-server-1.0)
-
 message(STATUS "GStreamer library status:")
 message(STATUS "    version: ${GST_VERSION}")
 message(STATUS "    libraries: ${GST_LIBRARIES} ${GSTAPP_LIBRARIES} ${GST_RTSP_LIBRARIES}")
 message(STATUS "    include path: ${GST_INCLUDE_DIRS}")
-include_directories( ${GST_INCLUDE_DIRS} )
+include_directories(${GST_INCLUDE_DIRS})
 set (GST_DEPEND_LIBS ${GST_LIBRARIES} ${GSTAPP_LIBRARIES} ${GST_RTSP_LIBRARIES})
 
 # triton server
@@ -45,87 +49,76 @@ set(TRITON_SERVER_LIBS /opt/tritonserver/lib/libtritonserver.so)
 set(RAPID_JSON_INCLUDE_DIRS ${CMAKE_SOURCE_DIR}/third_party/rapidjson/include)
 
 # set include directories
-include_directories( ${PADDLE_INFERENCE_INCLUDE_DIRS} ${TRITON_SERVER_INCLUDE_DIRS} ${RAPID_JSON_INCLUDE_DIRS})
+include_directories(${PADDLE_INFERENCE_INCLUDE_DIRS} ${TRITON_SERVER_INCLUDE_DIRS} ${RAPID_JSON_INCLUDE_DIRS})
 
-# trt_vehicle
-file(GLOB TRT_VEHICLE_SOURCES "third_party/trt_vehicle/**/*.cpp")
-cuda_add_library(trt_vehicle SHARED ${TRT_VEHICLE_SOURCES})
-target_link_libraries(trt_vehicle nvinfer ${OpenCV_LIBS} ${CUDA_LIBRARIES})
+# collect dependent libs for videopipe
+list(APPEND VP_DEPEND_LIBS ${OpenCV_LIBS} ${GST_DEPEND_LIBS} stdc++fs ${TRITON_SERVER_LIBS})
 
-file(GLOB NODES "nodes/*.cpp")
-file(GLOB INFERS_NODES "nodes/infers/*.cpp")
-file(GLOB OSD_NODES "nodes/osd/*.cpp")
-file(GLOB TRACK_NODES "nodes/track/*.cpp" "nodes/track/sort/*.cpp")
-file(GLOB RECORD_NODES "nodes/record/*.cpp")
-file(GLOB OBJECTS "objects/*.cpp")
-file(GLOB ELEMENTS_OBJECTS "objects/elements/*.cpp")
-file(GLOB SHAPES_OBJECTS "objects/shapes/*.cpp")
-file(GLOB BA_OBJECTS "objects/ba/*.cpp")
-file(GLOB UTILS_ANALYSIS_BOARD "utils/analysis_board/*.cpp")
-file(GLOB LOGGER "utils/logger/*.cpp")
-file(GLOB TRITON_SERVER_INFER "utils/*.cpp")
-list(REMOVE_ITEM INFERS_NODES ${CMAKE_CURRENT_SOURCE_DIR}/nodes/infers/vp_ppocr_text_detector_node.cpp)
+# optional for CUDA
+if(VP_WITH_CUDA) # CUDA enabled
+    add_definitions(-DVP_WITH_CUDA)
+endif()
 
+# optional for TensorRT
+if(VP_WITH_TRT)  # TensorRT enabled
+    add_definitions(-DVP_WITH_TRT)
+    set(VP_BUILD_FROM ON)  # set flag for sub project
+    set(VP_TRT_LIB_PATH "")
+    set(VP_TRT_INC_PATH "")
+    # trt_vehicle
+    message("-------------start build trt_vehicle--------------")
+    add_subdirectory(third_party/trt_vehicle)
+    list(APPEND VP_DEPEND_LIBS trt_vehicle)
+    link_directories(${VP_TRT_LIB_PATH})
+    message(STATUS "TensorRT library status:")
+    message(STATUS "    include path: ${VP_TRT_INC_PATH}")
+    message(STATUS "    library path: ${VP_TRT_LIB_PATH}")
+    message("--------------end build trt_vehicle---------------")
+    # trt_yolov8    
+    message("-------------start build trt_yolov8--------------")
+    add_subdirectory(third_party/trt_yolov8)
+    list(APPEND VP_DEPEND_LIBS trt_yolov8)
+    message("--------------end build trt_yolov8---------------")
+endif()
 
-add_library(video_pipe SHARED ${NODES} ${INFERS_NODES} ${OSD_NODES} ${TRACK_NODES} ${RECORD_NODES}
-    ${OBJECTS} ${ELEMENTS_OBJECTS} ${SHAPES_OBJECTS} ${BA_OBJECTS} ${UTILS_ANALYSIS_BOARD} ${LOGGER}
-    ${TRITON_SERVER_INFER})
-# target_link_libraries(video_pipe ${OpenCV_LIBS} ${TRITON_SERVER_LIBS} paddle_ocr trt_vehicle -lstdc++fs)
-target_link_libraries(video_pipe ${OpenCV_LIBS} ${TRITON_SERVER_LIBS} trt_vehicle -lstdc++fs)
+# optional for PaddlePaddle
+if(VP_WITH_PADDLE)  # PaddlePaddle enabled
+    add_definitions(-DVP_WITH_PADDLE)
+    set(VP_BUILD_FROM ON)  # set flag for sub project
+    set(VP_PADDLE_LIB_PATH "")
+    set(VP_PADDLE_INC_PATH "")
+    message("-------------start build paddle_ocr--------------")
+    add_subdirectory(third_party/paddle_ocr) # build paddle_ocr
+    list(APPEND VP_DEPEND_LIBS paddle_ocr)
+    link_directories(${VP_PADDLE_LIB_PATH})
+    message(STATUS "PaddlePaddle library status:")
+    message(STATUS "    include path: ${VP_PADDLE_INC_PATH}")
+    message(STATUS "    library path: ${VP_PADDLE_LIB_PATH}")
+    message("--------------end build paddle_ocr---------------")
+endif()
 
-add_executable(1-1-1_sample sample/1-1-1_sample.cpp)
-target_link_libraries(1-1-1_sample video_pipe ${OpenCV_LIBS} ${TRITON_SERVER_LIBS} ${GST_DEPEND_LIBS})
+# optional for Kafka
+if(VP_WITH_KAFKA)
+    add_definitions(-DVP_WITH_KAFKA)
+    list(APPEND VP_DEPEND_LIBS rdkafka++)
+endif()
 
-add_executable(1-1-N_sample sample/1-1-N_sample.cpp)
-target_link_libraries(1-1-N_sample video_pipe ${OpenCV_LIBS} ${TRITON_SERVER_LIBS} ${GST_DEPEND_LIBS})
+# tinyexpr
+message("-------------start build tinyexpr--------------")
+add_subdirectory(third_party/tinyexpr)
+list(APPEND VP_DEPEND_LIBS tinyexpr)
+message("--------------end build tinyexpr---------------")
 
-add_executable(1-N-N_sample sample/1-N-N_sample.cpp)
-target_link_libraries(1-N-N_sample video_pipe ${OpenCV_LIBS} ${TRITON_SERVER_LIBS} ${GST_DEPEND_LIBS})
+# collect source files for videopipe
+file(GLOB_RECURSE NODES "nodes/*.cpp")
+file(GLOB_RECURSE OBJECTS "objects/*.cpp")
+file(GLOB_RECURSE UTILS "utils/*.cpp")
+#...#
+list(APPEND VP_CPPS_SOURCES ${NODES} ${OBJECTS} ${UTILS})
 
-add_executable(N-1-N_sample sample/N-1-N_sample.cpp)
-target_link_libraries(N-1-N_sample video_pipe ${OpenCV_LIBS} ${TRITON_SERVER_LIBS} ${GST_DEPEND_LIBS})
+# build for videopipe
+add_library(${PROJECT_NAME} SHARED ${VP_CPPS_SOURCES})
+target_link_libraries(${PROJECT_NAME} ${VP_DEPEND_LIBS})
 
-add_executable(N-N_sample sample/N-N_sample.cpp)
-target_link_libraries(N-N_sample video_pipe ${OpenCV_LIBS} ${TRITON_SERVER_LIBS} ${GST_DEPEND_LIBS})
-
-# add_executable(paddle_infer_sample sample/paddle_infer_sample.cpp)
-# target_link_libraries(paddle_infer_sample video_pipe ${OpenCV_LIBS} ${TRITON_SERVER_LIBS} ${GST_DEPEND_LIBS})
-
-add_executable(src_des_sample sample/src_des_sample.cpp)
-target_link_libraries(src_des_sample video_pipe ${OpenCV_LIBS} ${TRITON_SERVER_LIBS} ${GST_DEPEND_LIBS})
-
-add_executable(trt_infer_sample sample/trt_infer_sample.cpp)
-target_link_libraries(trt_infer_sample video_pipe ${OpenCV_LIBS} ${TRITON_SERVER_LIBS} ${GST_DEPEND_LIBS})
-
-add_executable(vp_logger_sample sample/vp_logger_sample.cpp)
-target_link_libraries(vp_logger_sample video_pipe ${OpenCV_LIBS} ${TRITON_SERVER_LIBS} ${GST_DEPEND_LIBS})
-
-add_executable(face_tracking_sample sample/face_tracking_sample.cpp)
-target_link_libraries(face_tracking_sample video_pipe ${OpenCV_LIBS} ${TRITON_SERVER_LIBS} ${GST_DEPEND_LIBS})
-
-add_executable(interaction_with_pipe_sample sample/interaction_with_pipe_sample.cpp)
-target_link_libraries(interaction_with_pipe_sample video_pipe ${OpenCV_LIBS} ${TRITON_SERVER_LIBS} ${GST_DEPEND_LIBS})
-
-add_executable(message_broker_sample sample/message_broker_sample.cpp)
-target_link_libraries(message_broker_sample video_pipe ${OpenCV_LIBS} ${TRITON_SERVER_LIBS} ${GST_DEPEND_LIBS})
-
-add_executable(message_broker_sample2 sample/message_broker_sample2.cpp)
-target_link_libraries(message_broker_sample2 video_pipe ${OpenCV_LIBS} ${TRITON_SERVER_LIBS} ${GST_DEPEND_LIBS})
-
-add_executable(vehicle_tracking_sample sample/vehicle_tracking_sample.cpp)
-target_link_libraries(vehicle_tracking_sample video_pipe ${OpenCV_LIBS} ${TRITON_SERVER_LIBS} ${GST_DEPEND_LIBS})
-
-add_executable(record_sample sample/record_sample.cpp)
-target_link_libraries(record_sample video_pipe ${OpenCV_LIBS} ${TRITON_SERVER_LIBS} ${GST_DEPEND_LIBS})
-
-add_executable(triton_infer_sample sample/triton_infer_sample.cpp)
-target_link_libraries(triton_infer_sample video_pipe ${OpenCV_LIBS} ${TRITON_SERVER_LIBS} ${GST_DEPEND_LIBS})
-
-add_executable(1-1-1_tritonserver_sample sample/1-1-1_tritonserver_sample.cpp)
-target_link_libraries(1-1-1_tritonserver_sample video_pipe ${OpenCV_LIBS} ${TRITON_SERVER_LIBS} ${GST_DEPEND_LIBS})
-
-add_executable(1-1-1_yolo_tritonserver_sample sample/1-1-1_yolo_tritonserver_sample.cpp)
-target_link_libraries(1-1-1_yolo_tritonserver_sample video_pipe ${OpenCV_LIBS} ${TRITON_SERVER_LIBS} ${GST_DEPEND_LIBS})
-
-add_executable(triton_infer_video_sample sample/triton_infer_video_sample.cpp)
-target_link_libraries(triton_infer_video_sample video_pipe ${OpenCV_LIBS} ${TRITON_SERVER_LIBS} ${GST_DEPEND_LIBS})
+# build for samples
+add_subdirectory(samples)

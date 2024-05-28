@@ -14,19 +14,19 @@ namespace vp_nodes {
     };
 
     // base class for tracking, can not be initialized directly.
-    class vp_track_node: public vp_node
-    {
+    // note that a track node can work on different channels at the same time
+    class vp_track_node: public vp_node {
     private:
-        // cache channel index
-        int channel_index = -1;
-
         // track for
         vp_track_for track_for = vp_track_for::NORMAL;
         
         // cache tracks at previous frames
-        std::map<int, std::vector<vp_objects::vp_rect>> tracks_by_id;
+        // std::map<int, std::vector<vp_objects::vp_rect>> tracks_by_id;
+        std::map<int, std::map<int, std::vector<vp_objects::vp_rect>>> all_tracks_by_id;
+
         // stamp
-        std::map<int, int> last_tracked_frame_indexes;
+        // std::map<int, int> last_tracked_frame_indexes;
+        std::map<int, std::map<int, int>> all_last_tracked_frame_indexes;
 
         // remove cache tracks if it has been long time since last tracked.
         const int max_allowed_disappear_frames = 25;
@@ -43,7 +43,7 @@ namespace vp_nodes {
         // it is a pure virtual function which should be implemented by derived class.
         // In:  rects & embeddings whose size() can be zero
         // Out: track ids
-        virtual void track(const std::vector<vp_objects::vp_rect>& target_rects, 
+        virtual void track(int channel_index, const std::vector<vp_objects::vp_rect>& target_rects, 
                         const std::vector<std::vector<float>>& target_embeddings, 
                         std::vector<int>& track_ids) = 0;
 

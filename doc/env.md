@@ -1,16 +1,27 @@
 
 
-## personal environment ##
+## Personal Development Environment ##
+
+- VS Code for Windows 11
+- Ubuntu 18.04 x86_64 / C++17  / GCC 7.5 / GTX 1080 GPU
+- GStreamer 1.14.5 / OpenCV 4.6
 ---------
-VS Code + Ubuntu 18.04 C++17  gcc 7.5
 
----------
-apt-get install ffmpeg/gstreamer/other dependency.
+Install GStreamer (1.14.5 for Ubuntu 18.04 by default):
+```
+apt-get install libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libgstreamer-plugins-bad1.0-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly gstreamer1.0-libav gstreamer1.0-tools gstreamer1.0-x gstreamer1.0-alsa gstreamer1.0-gl gstreamer1.0-gtk3 gstreamer1.0-qt5 gstreamer1.0-pulseaudio libgstrtspserver-1.0-dev gstreamer1.0-rtsp
+```
 
-install opencv 4 from GitHub, with ffmpeg/gstreamer ON (cuda optional).
+Install OpenCV from source with `gstreamer` ON (CUDA optional). download source code of OpenCV 4.6.0 (with extra contrib modules) from github first, put them at the same directory then run `cmake` and `make` command:
 
-opencv 4.6.0 cmake command:
+```
+step 1:
+cd `the path of opencv 4.6.0`
+mkdir build && cd build
+```
 
+```
+step 2:
 cmake -D CMAKE_BUILD_TYPE=RELEASE \
 -D CMAKE_INSTALL_PREFIX=/usr/local \
 -D WITH_TBB=ON \
@@ -29,41 +40,51 @@ cmake -D CMAKE_BUILD_TYPE=RELEASE \
 -D OPENCV_GENERATE_PKGCONFIG=ON \
 -D OPENCV_PC_FILE_NAME=opencv.pc \
 -D OPENCV_ENABLE_NONFREE=ON \
--D OPENCV_EXTRA_MODULES_PATH=/windows2/zhzhi/opencv_contrib-4.6.0/modules \
+-D OPENCV_EXTRA_MODULES_PATH=../../opencv_contrib-4.6.0/modules \
 -D INSTALL_PYTHON_EXAMPLES=OFF \
 -D INSTALL_C_EXAMPLES=OFF \
 -D BUILD_EXAMPLES=OFF ..
+```
+
+```
+step 3:
+make -j8
+```
 
 ---------
-VcXsrv for screen display from WSL1 to local pc (or from remote machine to local desktop)
-install: https://sourceforge.net/p/vcxsrv/wiki/Home/
+`VcXsrv` for screen display from remote machine to local desktop in case of using SSH terminal.
 
-export DISPLAY=local_ip:0.0 (or add to ~/.bashrc)
+- first install PC client from: https://sourceforge.net/p/vcxsrv/wiki/Home/
+- then run `export DISPLAY=local_ip:0.0` (or add it to ~/.bashrc) on remote machine (linux server or embedded board)
 
 ---------
-maybe you need install a nginx as rtmp server for debug purpose. 
+Maybe you need install nginx with `http-rtmp-module` as rtmp server for debug purpose (other tools such as `ZLMediaKit` works fine **which was highly recommended**). Also, maybe you need a rtsp server from which we can receive rtsp stream for debug purpose.
 
-Also, maybe you need rtsp server to receive its stream for debug purpose.
+- [how to install ZLMeidaKit](https://github.com/ZLMediaKit/ZLMediaKit/wiki/vcpkg%E6%96%B9%E5%BC%8F%E5%AE%89%E8%A3%85zlmediakit)
+- [how to push stream to ZLMediaKit](https://github.com/ZLMediaKit/ZLMediaKit/wiki/ZLMediaKit%E6%8E%A8%E6%B5%81%E6%B5%8B%E8%AF%95), a few samples which used `vp_rtmp_des_node` in VidepPipe would push rtmp stream to server.
+- [how to pull/play stream from ZLMediaKit](https://github.com/ZLMediaKit/ZLMediaKit/wiki/%E6%92%AD%E6%94%BEurl%E8%A7%84%E5%88%99), VLC player or ffplay was recommended.
+
+---------
+Please prepare kafka server AND install `librdkafka` client sdk if you want to enable kafka-related codes.
+- [how to install kafka server](https://kafka.apache.org/quickstart)
+- how to install `librdkafka`? run `sudo apt-get install librdkafka-dev`
+
 
 ## tips ##
-use shared_ptr/make_shared in whole project, do not use new/delete.
+- Use shared_ptr/make_shared in whole project, do not use new/delete.
+- The pipeline is driven by stream data, if your app is not responding, maybe no stream input.
 
-the pipe is driven by stream data, if your app is not responding, maybe no stream input.
-
-## git tips ##
-if `git push --set-upstream origin new_branch` fails when pushing new local branch to remote, 
-try run `git remote add origin https://github.com/sherlockchou86/video_pipe_c.git` first.
 
 ## about Hardware Acceleration ##
-since decode & encode in VideoPipe depend on gstreamer (encapsulated inside opencv), if you want to use your GPUs/NPUs to accelerate decoding and encoding performace, you need get/install HARD decode or HARD encode gstreamer plugins correctly first and modify gst launch string (take `vp_file_des_node` for example):
+Since decode & encode in VideoPipe depend on gstreamer (encapsulated inside opencv), if you want to use your GPUs/NPUs to accelerate decoding and encoding performace, you need get/install HARD decode or HARD encode `gstreamer plugins` correctly first and modify gst launch string (take `vp_file_des_node` for example):
 ```cpp
 appsrc ! videoconvert ! x264enc bitrate=%d ! mp4mux ! filesink location=%s
 ```
 to
 ```
-appsrc ! videoconvert ! nvh264enc bitrate=%d ! mp4mux ! filesink location=%s
+appsrc ! videoconvert ! nvv4l2h264enc bitrate=%d ! mp4mux ! filesink location=%s
 ```
-the plugin `x264enc` use CPUs to encode video stream, but `nvh264enc` use GPUs instread. if you use other platforms other than NVIDIA, you need Corresponding Hardware Acceleration plugins.
+the plugin `x264enc` use CPUs to encode video stream, but `nvv4l2h264enc`(comes from DeepStream SDK) use GPUs instread. if you use other platforms other than NVIDIA, you need Corresponding Hardware Acceleration plugins.
 
 **soft/hard decode example**
 ```
@@ -74,6 +95,7 @@ gst-launch-1.0 filesrc location=./face.mp4 ! qtdemux ! h264parse ! nvv4l2decoder
 **soft/hard encode example**
 ```
 gst-launch-1.0 filesrc location=./face.mp4 ! qtdemux ! h264parse ! avdec_h264 ! x264enc ! h264parse ! flvmux ! filesink location=./new_face.flv    // encode by x264enc use CPUs
-gst-launch-1.0 filesrc location=./face.mp4 ! qtdemux ! h264parse ! avdec_h264 ! nvh264enc ! h264parse ! flvmux ! filesink location=./new_face.flv  // encode by nvh264enc use NVIDIA GPUs
+gst-launch-1.0 filesrc location=./face.mp4 ! qtdemux ! h264parse ! avdec_h264 ! nvv4l2h264enc ! h264parse ! flvmux ! filesink location=./new_face.flv  // encode by nvv4l2h264enc use NVIDIA GPUs
 ```
-[source code of hard decode/encode gstreamer plugins for NVIDIA](https://gitlab.freedesktop.org/gstreamer/gstreamer/-/tree/main/subprojects/gst-plugins-bad/sys/nvcodec).
+[source code of hard decode/encode gstreamer plugins for NVIDIA](https://gitlab.freedesktop.org/gstreamer/gstreamer/-/tree/main/subprojects/gst-plugins-bad/sys/nvcodec).(developed by community, open source), we could also use decode/encode plugins from [DeepStream SDK](https://docs.nvidia.com/metropolis/deepstream/6.0/dev-guide/text/DS_Quickstart.html) which maintained by NVIDIA but closed source.
+

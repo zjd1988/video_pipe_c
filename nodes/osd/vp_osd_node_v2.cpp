@@ -15,7 +15,7 @@ namespace vp_nodes {
     }
     
     vp_osd_node_v2::~vp_osd_node_v2() {
-
+        deinitialized();
     }
 
     std::shared_ptr<vp_objects::vp_meta> vp_osd_node_v2::handle_frame_meta(std::shared_ptr<vp_objects::vp_frame_meta> meta) {
@@ -71,6 +71,7 @@ namespace vp_nodes {
                 // !!!
                 // for plate sub target (color_text)
                 if (sub_label.size() == 2) {
+                    assert(ft2 != nullptr);
                     ft2->putText(canvas, sub_label[1], cv::Point(base_left + 10, meta->osd_frame.rows - padding - 5), 36, cv::Scalar(0), cv::FILLED, cv::LINE_AA, true);
                 }
                 base_left += gap_height + padding;                

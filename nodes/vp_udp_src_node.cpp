@@ -8,16 +8,19 @@ namespace vp_nodes {
     vp_udp_src_node::vp_udp_src_node(std::string node_name, 
                                     int channel_index, 
                                     int port, 
-                                    float resize_ratio):
+                                    float resize_ratio,
+                                    std::string gst_decoder_name,
+                                    int skip_interval):
                                     vp_src_node(node_name, channel_index, resize_ratio),
-                                    port(port) {
-        this->gst_template = vp_utils::string_format(this->gst_template, port);
+                                    port(port), gst_decoder_name(gst_decoder_name), skip_interval(skip_interval) {
+        assert(skip_interval >= 0 && skip_interval <= 9);
+        this->gst_template = vp_utils::string_format(this->gst_template, port, gst_decoder_name.c_str());
         VP_INFO(vp_utils::string_format("[%s] [%s]", node_name.c_str(), gst_template.c_str()));
         this->initialized();
     }
     
     vp_udp_src_node::~vp_udp_src_node() {
-
+        deinitialized();
     }
 
     // define how to receive video stream via udp, create frame meta etc.
@@ -27,8 +30,8 @@ namespace vp_nodes {
         int video_width = 0;
         int video_height = 0;
         int fps = 0;
-
-        while(true) {
+        int skip = 0;
+        while(alive) {
             // check if need work
             gate.knock();
 
@@ -50,12 +53,12 @@ namespace vp_nodes {
                 original_width = video_width;
                 original_height = video_height;
 
-                // stream_info_hooker activated if need
-                if (stream_info_hooker) {
-                    vp_stream_info stream_info {channel_index, fps, video_width, video_height, to_string()};
-                    stream_info_hooker(node_name, stream_info);
-                }
+                // set true fps because skip some frames
+                fps = fps / (skip_interval + 1);
             }
+            // stream_info_hooker activated if need
+            vp_stream_info stream_info {channel_index, original_fps, original_width, original_height, to_string()};
+            invoke_stream_info_hooker(node_name, stream_info);
 
             udp_capture >> frame;
             if(frame.empty()) {
@@ -63,6 +66,13 @@ namespace vp_nodes {
                 continue;
             }
 
+            // need skip
+            if (skip < skip_interval) {
+                skip++;
+                continue;
+            }
+            skip = 0;
+            
             // need resize
             cv::Mat resize_frame;
             if (this->resize_ratio != 1.0f) {                 
@@ -71,6 +81,9 @@ namespace vp_nodes {
             else {
                 resize_frame = frame.clone(); // clone!;
             }
+            // set true size because resize
+            video_width = resize_frame.cols;
+            video_height = resize_frame.rows;
 
             this->frame_index++;
             // create frame meta
@@ -90,6 +103,10 @@ namespace vp_nodes {
                 VP_DEBUG(vp_utils::string_format("[%s] after handling meta, out_queue.size()==>%d", node_name.c_str(), out_queue.size()));
             }       
         }
+
+        // send dead flag for dispatch_thread
+        this->out_queue.push(nullptr);
+        this->out_queue_semaphore.signal();    
     }
 
     // return stream uri

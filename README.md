@@ -87,228 +87,202 @@ docker build -t nvcr.io/nvidia/deepstream:6.0-triton-video-pipe-c -f ./dockerfil
 ```
 
 
-## VideoPipe
+## 一、介绍
 
-A framework for video structured. It could handle complex tasks such as stream reading (from local or network), video decoding, inference based on deep learning models, OSD(on screen display), message broker via middleware (like kafka), video encoding and stream pushing(rtmp or local file). It's Plugin-Oriented coding style, we can construct different types of pipeline using independent plugins namely `Node` in framework. **wechat: zhzhi78** [中文介绍](https://www.cnblogs.com/xiaozhi_5638/p/16767917.html)
+`VideoPipe` 是一个用于视频分析和结构化的框架，采用 C++ 编写、依赖少、易上手。它像管道一样，其中每个节点相互独立并可自行搭配，`VideoPipe` 可用来构建不同类型的视频分析应用，适用于视频结构化、图片搜索、人脸识别、交通/安防领域的行为分析（如交通事件检测）等场景。
 
-VideoPipe works like DeepStream from Nvidia and MindX SDK from Huawei, but it is more simple to use, more portable and has few dependency on third-party modules such as gstreamer which is hard to learn(coding style or debug). The framework is written purely by native C++ STL, and depends on popular modules like OpenCV, so the code is more portable for different platforms.
+![](./doc/g1.gif)
+
+## 二、优势和特点
+
+`VideoPipe` 类似于英伟达的 DeepStream 和华为的 mxVision 框架，但它更易于使用、更具备可移植性。
+
+|名称|是否开源|学习门槛|适用平台|性能|三方依赖|
+|--|--|--|--|--|--|
+|DeepStream|否|高|仅限英伟达|高|多|
+|mxVision|否|高|仅限华为|高|多|
+|VideoPipe|是|低|不限平台|中|少|
+
+`VideoPipe` 采用面向插件的编码风格，可以根据不同的需求按需搭配，我们可以使用独立的插件（即框架中的 `Node` 类型），来构建不同类型的视频分析应用。你只需准备好模型并了解如何解析其输出即可，推理可以基于不同的后端实现，如 OpenCV::DNN（默认）、TensorRT、PaddleInference、ONNXRuntime 等，任何你喜欢的都可以。
+
 ![](./doc/p1.png)
 
-The framework can be used in such situations:
-1. Video Structure
-2. Image Search
-3. Face Recognition
-4. Behaviour Analyse based on Video (Security and Safety)
+## 三、演示
 
-> NOTE: <br/>
-> VideoPipe is a framework aimed to make model-integration more simple in CV field, it is not a deep learning related frameworks such as tensorflow, tensorrt.
+https://github.com/sherlockchou86/video_pipe_c/assets/13251045/b1289faa-e2c7-4d38-871e-879ae36f6d50
 
-https://user-images.githubusercontent.com/13251045/192935445-d39a41af-4619-4ae1-a975-19de44014fa2.mp4
+播放器右下角全屏观看，[更多视频演示](./SAMPLES.md)
 
-https://user-images.githubusercontent.com/13251045/199926565-4f1018be-fdee-4d0d-8d4a-8da0a1a15c83.mp4
+## 四、功能
 
-## Key Features
-- `Stream Reading`. Support popular protocols such as udp(video or image), rtsp, rtmp, file(video or image).
-- `Video Decoding`. Support video decoding which is based on opencv/gstreamer([support Hardware Acceleration](https://github.com/sherlockchou86/video_pipe_c/blob/master/doc/env.md#about-hardware-acceleration)).
-- `Inference based on dl`. Support multi-level inference based on deep learning models, such as `Object-Detection`, `Image-Classification`, `Feature-Extraction`. What you need is preparing models and know how to parse its outputs. Inference can be implemented based on different backends such as opencv::dnn(default), tensorrt, paddle_inference, onnx runtime and anything you like.
-- `On Screen Display(OSD)`. Support visualization, like drawing outputs from model onto frame.
-- `Message Broker`. Support push structured data(via json/xml) to cloud, file or other platforms.
-- `Object Tracking`. Support object tracking such as iou, sort etc.
-- `Behaviour Analyse(BA)`. Support behaviour analyse based on tracking, such as `crossline`,`stop`.
-- `Recording`. Support video recording for specific period, screenshots for specific frame.
-- `Video Encoding`. Support video encoding which is based on opencv/gstreamer([support Hardware Acceleration](https://github.com/sherlockchou86/video_pipe_c/blob/master/doc/env.md#about-hardware-acceleration)).
-- `Stream Pushing`. Support stream pushing via rtmp, rtsp(no specialized rtsp server needed), file(video or image), udp(image only), screen display(GUI).
+VideoPipe 是一个让计算机视觉算法模型集成更加简单的框架，注意它不是像 TensorFlow、TensorRT 类似的深度学习框架。VideoPipe主要功能如下：
 
-## Highlights
+- 流读取：⽀持主流的视频流协议，如 udp、rtsp、rtmp、file、application。同时支持图片读取。
+- 视频解码：⽀持基于 OpenCV/GStreamer 的视频和图片解码（⽀持硬件加速）。
+- 算法推理：⽀持基于深度学习算法的多级推理，例如⽬标检测、图像分类、特征提取、图像生成等相关网络集成。同时支持传统图像算法集成。
+- ⽬标跟踪：⽀持⽬标追踪，例如 IOU、SORT 跟踪算法等。
+- ⾏为分析（BA）：⽀持基于跟踪的⾏为分析，例如越线、停⻋、违章等交通行为判断。
+- 业务逻辑：支持任意自定义业务逻辑的集成，可以与业务强相关。
+- 数据代理：⽀持将结构化数据（json/xml/⾃定义格式）以 kafka/Sokcet 等⽅式推送到云端、文件或其他第三⽅平台。
+- 录制：⽀持特定时间段的视频录制，特定帧的截图，并存文件。
+- 屏幕显⽰（OSD）：支持将结构化数据、业务逻辑处理结果绘制到帧上。
+- 视频编码：⽀持基于 OpenCV/GStreamer 的视频和图片编码（⽀持硬件加速）。
+- 流推送：⽀持主流的视频流协议，如 udp、rtsp、rtmp、file、application。同时支持图片推送。
 
-1. Visualization for pipelines, which is useful when debugging. The running status of pipeline refresh automatically on screen, including fps, cache size, latency at each link in pipeline, We can figure out quickly where the bottleneck is based on these running information.
-2. Data transferred between 2 nodes by smart pointer which is shallow-copy by default, no content copy operations needed when data flowing through the whole pipeline. But, we can specify deep-copy if we need, for example, when the pipeline has multi branches, and we need operate on 2 different contents separately.
-3. We can construct different types of pipeline, only 1 channel in a pipeline or multi channels in a pipeline are both supported, channels in pipeline are independent. 
-4. The pipeline support hooks, we can register callbacks to the pipeline to get the status notification(see the 1st item), such as fps.
-5. Many node classes are already built-in in VideoPipe, but all nodes in framework can be re-implemented by yourself, and also you can implement more based on your requirements.
-6. The whole framework is written mainly by native C++ which is portable to all platforms.
+## 五、快速上手
 
-## Help doc
-- :fire: [sample code](./sample/README.md)
-- :heartpulse: [node table](./nodes/README.md)
-- :collision: [how VideoPipe works](./doc/about.md)
-- :hear_no_evil: [how record works](./nodes/record/README.md)
-- :star_struck: [environment for reference](./doc/env.md)
-- :blush: wait for update...
+### 5.1 依赖
 
-## Dependency
+平台
+- Ubuntu 18.04 x86_64 NVIDIA rtx/tesla GPUs
+- Ubuntu 18.04 aarch64 NVIDIA jetson serials device，tx2 tested
+- Ubuntu 18.04 x86_64 Cambrian MLU serials device, MLU 370 tested (code not provided)
+- Ubuntu 18.04 aarch64 Rockchip RK35** serials device, RK3588 tested (code not provided)
+- Wait for your test
 
-Platforms
-- ubuntu 18.04 x86_64 NVIDIA rtx/tesla GPUs
-- ubuntu 18.04 aarch64 NVIDIA jetson serials device ([tx2 tested](https://github.com/sherlockchou86/video_pipe_c/tree/jetson_tx2))
-- ubuntu 18.04 x86_64([PURE CPU](https://github.com/sherlockchou86/video_pipe_c/tree/pure_cpu))
-- other platforms wait for tested
+基础
+- C++ 17
+- OpenCV >= 4.6
+- GStreamer 1.14.5 (Required by OpenCV)
+- GCC >= 7.5
 
-Basics
-- vscode (remote development on windows)
-- c++ 17
-- opencv 4.6
-- gstreamer 1.20 (required by opencv)
-- gcc 7.5
-
-Optional, if you need implement(or use built-in) infer nodes based on other inference backends other than `opencv::dnn`.
+可选，如果你需要实现自己的推理后端，或者使用除 `opencv::dnn` 之外的其他推理后端.
 - CUDA
 - TensorRT
-- paddle inference
-- onnx runtime
-- anything you like
+- Paddle Inference
+- ONNX Runtime
+- Anything you like
 
-[how to install cuda and tensorrt](./third_party/trt_vehicle/README.md)
+[如何安装CUDA和TensorRT](./third_party/trt_vehicle/README.md)
 
-[how to install paddle_inference](./third_party/paddle_ocr/README.md)
+[如何安装Paddle_Inference](./third_party/paddle_ocr/README.md)
 
-## How to build and debug
+### 5.2 编译和调试
 
-We are offering 2 options:
-1. Shell & VSCode
-2. CMake & CLion
+1. 运行 `git clone https://github.com/sherlockchou86/VideoPipe.git`
+2. 运行 `cd VideoPipe`
+3. 运行 `mkdir build && cd build`
+4. 运行 `cmake ..`
+5. 运行 `make -j8`
 
-### Option 1: Shell & VSCode [recommended since it's fullly tested]
-- Build VideoPipe (via shell)
-    - run `cd build/`
-    - run `sh build.sh`
-    - it will generate a library called `libvp.so` and copy it to `/usr/local/lib` automatically.
-    
-- Debug VideoPipe (via vscode)
-    - select the cpp file you want to debug (keep it activated), like `./sample/1-1-1_sample.cpp`
-    - press `run` button at debug menu in vscode
-    - select a launch item at the top of window (something like `C/C++: g++ vp project`)
+编译完成后，所有的库文件存放在 `build/libs` 中，所有的 Sample 运行文件存放在 `build/bin` 中。在执行第 4 步的时候，可以添加一些编译选项：
+- -DVP_WITH_CUDA=ON （编译 CUDA 相关功能，默认为 OFF）
+- -DVP_WITH_TRT=ON （编译 TensorRT 相关功能和 Samples，默认为 OFF）
+- -DVP_WITH_PADDLE=ON （编译 PaddlePaddle 相关功能和 Samples，默认为 OFF）
+- -DVP_WITH_KAFKA=ON （编译 Kafka 相关功能和 Samples，默认为 OFF）
+- -DVP_BUILD_COMPLEX_SAMPLES=ON （编译高级 Samples，默认为 OFF）
 
-> All subprojects in `./third_party/` are independent projects and can be built and debug like above, please refer to README.md in sub folder.
+比如需要开启CUDA和TensorRT相关的模块，可以运行 `cmake -DVP_WITH_CUDA=ON -DVP_WITH_TRT=ON ..`。如果只运行 `cmake ..`，那么所有代码运行在 CPU 上。
 
-### Option 2: CMake & CLion
-#### Prepare environments
-
-Add soft link for libraries:
-
-```shell
-cd /usr/local/include
-ln -s /path/to/opencv2 opencv2 # opencv
-ln -s /usr/local/cuda/include cuda # cuda
-ln -s /path/to/TensorRT-xxx/include tensorrt # TensorRT
 ```
+# 开启全部
+cmake -DVP_WITH_CUDA=ON \
+-DVP_WITH_TRT=ON \
+-DVP_WITH_PADDLE=ON \
+-DVP_WITH_KAFKA=ON \
+-DVP_BUILD_COMPLEX_SAMPLES=ON ..
 
-#### Build samples
-
-```shell
-mkdir build # if not exist
-cd build
+# 关闭全部（默认）
 cmake ..
-make
 ```
 
-You will get dynamic libraries and executable samples in `build`.
+如果要运行编译生成的 Samples，先下载模型文件和测试数据：
 
-#### Debug
-Use IDEs such as *CLion* which will read the `CMakeLists.txt` and generate debug configurations.
+1. [谷歌网盘下载测试文件和模型](https://drive.google.com/drive/folders/1v9dVcR6xttUTB-WPsH3mZ_ZZMzD4wG-v?usp=sharing)
+2. [百度网盘下载测试文件和模型](https://pan.baidu.com/s/1jr2nBnEDmuNaM5DiMjbC0g?pwd=nf53)
 
-## How to use 
+将下载好的目录（名称为 vp_data）放在任何位置（比如放在 `/root/abc` 下面），然后在 `同一目录` 下运行 Sample，比如在 `/root/abc` 下面执行命令：`[path to VideoPipe]/build/bin/1-1-1_sample` 即可运行 1-1-1_sample。
 
-- Build VideoPipe first and use shared library.
-- Or referencing source code directly and build your whole application.
+**注意**：`./third_party/` 下面都是独立的项目，有的是 header-only 库，被 VideoPipe 直接引用；有的包含有 cpp 文件，可以独立编译或运行，VideoPipe 依赖这些库，在编译 VideoPipe 的过程中会自动编译这些库。这些库也包含自己的 Samples，具体使用方法可参见对应子目录下的 README 文件.
 
-[download models and test files from Google Drive](https://drive.google.com/drive/folders/1u49ai5VeGh6-eCBPNDnOIELt4jPnTw__?usp=sharing)
+### 5.3 如何使用
 
-[download models and test files from Baidu Pan](https://pan.baidu.com/s/11W7seUXWwYofaYNVGChIEw?pwd=gs4w) wechat:zhzhi78 for onnx models file
+1. 先将 VideoPipe 编译成库，然后引用它.
+2. 或者直接引用源代码，然后编译整个Application.
 
-Demo below shows how to construct pipeline and run it (first change file path in code):
+下面是一个如何构建 Pipeline 然后运行的 Sample(请先修改代码中的相关文件路径)：
+
 ```c++
-#include "VP.h"
-
 #include "../nodes/vp_file_src_node.h"
-#include "../nodes/infers/vp_trt_vehicle_detector.h"
-#include "../nodes/infers/vp_trt_vehicle_plate_detector.h"
-#include "../nodes/osd/vp_osd_node_v2.h"
+#include "../nodes/infers/vp_yunet_face_detector_node.h"
+#include "../nodes/infers/vp_sface_feature_encoder_node.h"
+#include "../nodes/osd/vp_face_osd_node_v2.h"
 #include "../nodes/vp_screen_des_node.h"
 #include "../nodes/vp_rtmp_des_node.h"
 #include "../utils/analysis_board/vp_analysis_board.h"
 
-#if MAIN
+/*
+* 名称：1-1-N sample
+* 完整代码位于：samples/1-1-N_sample.cpp
+* 功能说明：1个视频输入，1个视频分析任务（人脸检测和识别），2个输出（屏幕输出/RTMP推流输出）
+*/
+
 int main() {
-    // create nodes
-    auto file_src_0 = std::make_shared<vp_nodes::vp_file_src_node>("file_src_0", 0, "./test_video/13.mp4");
-    auto trt_vehicle_detector = std::make_shared<vp_nodes::vp_trt_vehicle_detector>("vehicle_detector", "./vehicle.trt");
-    auto trt_vehicle_plate_detector = std::make_shared<vp_nodes::vp_trt_vehicle_plate_detector>("vehicle_plate_detector", "./det.trt", "./rec.trt");
-    auto osd_0 = std::make_shared<vp_nodes::vp_osd_node_v2>("osd_0", "./font/NotoSansCJKsc-Medium.otf");
-    auto screen_des_0 = std::make_shared<vp_nodes::vp_screen_des_node>("screen_des_0", 0, true, vp_objects::vp_size{640, 360});
-    auto rtmp_des_0 = std::make_shared<vp_nodes::vp_rtmp_des_node>("rtmp_des_0", 0, "rtmp://192.168.77.105/live/10000", vp_objects::vp_size{1280, 720});
+    VP_SET_LOG_INCLUDE_CODE_LOCATION(false);
+    VP_SET_LOG_INCLUDE_THREAD_ID(false);
+    VP_LOGGER_INIT();
 
-    // construct pipeline
-    trt_vehicle_detector->attach_to({file_src_0});
-    trt_vehicle_plate_detector->attach_to({trt_vehicle_detector});
-    osd_0->attach_to({trt_vehicle_plate_detector});
+    // 1、创建节点
+    // 视频获取 Node
+    auto file_src_0 = std::make_shared<vp_nodes::vp_file_src_node>("file_src_0", 0, "./test_video/10.mp4", 0.6);
+    // 2、模型推理 Node
+    // 一级推理：人脸检测
+    auto yunet_face_detector_0 = std::make_shared<vp_nodes::vp_yunet_face_detector_node>("yunet_face_detector_0", "./models/face/face_detection_yunet_2022mar.onnx");
+    // 二级推理：人脸识别
+    auto sface_face_encoder_0 = std::make_shared<vp_nodes::vp_sface_feature_encoder_node>("sface_face_encoder_0", "./models/face/face_recognition_sface_2021dec.onnx");
+    // 3、OSD Node
+    // 处理结果绘制到帧上
+    auto osd_0 = std::make_shared<vp_nodes::vp_face_osd_node_v2>("osd_0");
+    // 屏幕展示
+    auto screen_des_0 = std::make_shared<vp_nodes::vp_screen_des_node>("screen_des_0", 0);
+    // 推流展示
+    auto rtmp_des_0 = std::make_shared<vp_nodes::vp_rtmp_des_node>("rtmp_des_0", 0, "rtmp://192.168.77.60/live/10000");
 
-    // split into 2 sub-branches automatically
+    // 构建管道，将节点的处理结果关联起来
+    yunet_face_detector_0->attach_to({file_src_0});
+    sface_face_encoder_0->attach_to({yunet_face_detector_0});
+    osd_0->attach_to({sface_face_encoder_0});
+
+    // 管道自动拆分，通过屏幕/推流输出结果
     screen_des_0->attach_to({osd_0});
     rtmp_des_0->attach_to({osd_0});
 
-    // start pipeline
+    // 启动管道
     file_src_0->start();
 
-    // visualize pipeline for debug
+    // 可视化管道
     vp_utils::vp_analysis_board board({file_src_0});
     board.display();
 }
-#endif
 ```
-the above code will generate 3 visualizations:
-1. pipeline with status refreshing automatically
-2. frame display via screen (window gui)
-3. frame display via rtmp (video player)
+上面代码运行后，会出现 3 个画面:
+1. 管道的运行状态图，状态自动刷新
+2. 屏幕显示结果（GUI）
+3. 播放器显示结果（RTMP）
 
-![](./doc/p2.png)
-
-## How to contribute
-The project is under development currently, any PRs would be appreciated.
-
-note, the code, architecture may be not stable (2022/9/29)
-
-## Compared to other similar sdk
-
-VideoPipe is opensource totally and more portable for different soft/hard-ware platforms. DeepStream/MindX are platform-depended, maybe they can get better performance for some modules like decoding, inference, osd (for example, memory shared in GPU/NPU for all operations).
+![](./doc/g3.png)
 
 
-## Can do
-
-The products below borrow some experience/ideas from VideoPipe:
-> Note: they are not developed by VideoPipe totally.
-
-### behaviour analysis & image/video search
-![](./doc/p6.png)
-![](./doc/p7.png)
-
-## Samples
-|id|sample|screenshot|
+### 5.4 案例原型
+|ID|Sample|截图|
 |--|--|--|
-|1|1-1-1_sample|![](./doc//p10.png)|
-|2|1-1-N_sample|![](./doc//p11.png)|
-|3|1-N-N_sample|![](./doc//p12.png)|
-|4|N-1-N_sample|![](./doc//p13.png)|
-|5|N-N_sample|![](./doc//p14.png)|
-|6|paddle_infer_sample|![](./doc//p15.png)|
-|7|src_des_sample|![](./doc//p16.png)|
-|8|trt_infer_sample|![](./doc//p17.png)|
-|9|vp_logger_sample|-|
-|10|face_tracking_sample|![](./doc//p18.png)|
-|11|vehicle_tracking_sample|![](./doc//p22.png)|
-|12|interaction_with_pipe_sample|--|
-|13|record_sample|--|
-|14|message_broker_sample & message_broker_sample2|![](./doc//p21.png)|
-|15|mask_rcnn_sample|![](./doc//p30.png)|
-|16|openpose_sample|![](./doc//p31.png)|
-|17|enet_seg_sample|![](./doc//p32.png)|
-|18|multi_detectors_and_classifiers_sample|![](./doc//p33.png)|
-|19|image_des_sample|![](./doc//p34.png)|
-|20|image_src_sample|![](./doc//p35.png)|
-|21|rtsp_des_sample|![](./doc//p36.png)|
-|22|ba_crossline_sample|![](./doc//p37.png)|
-|23|plate_recognize_sample|![](./doc//p38.png)|
-|24|vehicle_body_scan_sample|![](./doc/p40.png)|
-|25|body_scan_and_plate_detect_sample|![](./doc/p39.png)|
-|26|app_src_sample|![](./doc/p41.png)|
-|27|vehicle_cluster_based_on_classify_encoding_sample|![](./doc/p42.png)|
+|1|face_tracking_sample|![](./doc/p18.png)|
+|2|vehicle_tracking_sample|![](./doc/p22.png)|
+|3|mask_rcnn_sample|![](./doc/p30.png)|
+|4|openpose_sample|![](./doc/p31.png)|
+|5|face_swap_sample|![](./doc/p57.png)|
+
+共计 40 多个原型案例，[点击](./SAMPLES.md)查看更多。
+
+## 六、更多资料
+- [Sample Code](./samples)
+- [Node Table](./nodes/README.md)
+- [How VideoPipe Works](./doc/about.md)
+- [Development Environment For Reference](./doc/env.md)
+
+## 扫码入群交流
+![](./doc/vx.png)
+
+## 鸣谢
+
+<a href="https://hellogithub.com/repository/4284d29e778642a4a51a471ab1eae6f0" target="_blank"><img src="https://api.hellogithub.com/v1/widgets/recommend.svg?rid=4284d29e778642a4a51a471ab1eae6f0" alt="Featured｜HelloGitHub" style="width: 250px; height: 54px;" width="250" height="54" /></a>

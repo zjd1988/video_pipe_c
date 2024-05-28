@@ -1,16 +1,18 @@
+#ifdef VP_WITH_TRT
 #include "vp_trt_vehicle_feature_encoder.h"
 
 namespace vp_nodes {
     vp_trt_vehicle_feature_encoder::vp_trt_vehicle_feature_encoder(std::string node_name, 
                                                                     std::string vehicle_feature_model_path, 
-                                                                    std::vector<int> p_class_ids_applied_to):
-                                                                    vp_secondary_infer_node(node_name, "", "", -1, "", "", 1, 1, 1, p_class_ids_applied_to) {
+                                                                    std::vector<int> p_class_ids_applied_to,
+                                                                    int min_width_applied_to, int min_height_applied_to):
+                                                                    vp_secondary_infer_node(node_name, "", "", "", 1, 1, 1, p_class_ids_applied_to, min_width_applied_to, min_height_applied_to) {
         vehicle_feature_encoder = std::make_shared<trt_vehicle::VehicleFeatureEncoder>(vehicle_feature_model_path);
         this->initialized();
     }
     
     vp_trt_vehicle_feature_encoder::~vp_trt_vehicle_feature_encoder() {
-
+        deinitialized();
     }
 
     void vp_trt_vehicle_feature_encoder::run_infer_combinations(const std::vector<std::shared_ptr<vp_objects::vp_frame_meta>>& frame_meta_with_batch) {
@@ -34,7 +36,7 @@ namespace vp_nodes {
         for (int i = 0; i < vehicles_feature.size(); i++) {
             for (int j = index; j < frame_meta->targets.size(); j++) {
                 // need apply or not?
-                if (!need_apply(frame_meta->targets[j]->primary_class_id)) {
+                if (!need_apply(frame_meta->targets[j]->primary_class_id, frame_meta->targets[j]->width, frame_meta->targets[j]->height)) {
                     // continue as its primary_class_id is not in p_class_ids_applied_to
                     continue;
                 }
@@ -60,3 +62,4 @@ namespace vp_nodes {
 
     }
 }
+#endif

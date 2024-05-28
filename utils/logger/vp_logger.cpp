@@ -7,8 +7,18 @@ namespace vp_utils {
     {
     }
     
-    vp_logger::~vp_logger()
-    {
+    vp_logger::~vp_logger() {
+        die();
+        if (log_writer_th.joinable()) {
+            log_writer_th.join();
+        }
+    }
+
+    void vp_logger::die() {
+        alive = false;
+        std::lock_guard<std::mutex> guard(log_cache_mutex);
+        log_cache.push("die");
+        log_cache_semaphore.signal();
     }
 
     void vp_logger::init() {
@@ -16,6 +26,13 @@ namespace vp_utils {
 
         // initialize file writer
         file_writer.init(log_dir, log_file_name_template);
+
+        #ifdef VP_WITH_KAFKA
+        // initialize kafka writer
+        auto servers_and_topic = vp_utils::string_split(kafka_servers_and_topic, '/');
+        assert(servers_and_topic.size() == 2);
+        kafka_writer.init(servers_and_topic[0], servers_and_topic[1]);
+        #endif
 
         // run thread
         auto t = std::thread(&vp_logger::log_write_run, this); 
@@ -28,9 +45,23 @@ namespace vp_utils {
             throw "vp_logger is not initialized yet!";
         }
         
-        // filter
+        // level filter
         if (level > log_level) {
             return;
+        }
+        
+        // keywords filter for debug level
+        if (level == vp_log_level::DEBUG && keywords_for_debug_log.size() != 0) {
+            bool filterd = true;
+            for(auto& keywords: keywords_for_debug_log) {
+                if (message.find(keywords) != std::string::npos) {
+                    filterd = false;
+                    break;
+                }
+            }
+            if (filterd) {
+                return;
+            }
         }
         
         /* create log */
@@ -72,14 +103,23 @@ namespace vp_utils {
     void vp_logger::log_write_run() {
         bool log_thres_warned = false;
         /* below code runs in single thread */
-        while (inited) {
+        while (inited && alive) {
             // wait for data
             log_cache_semaphore.wait();
             auto log = log_cache.front();
             log_cache.pop();
 
+            if (log == "die") {
+                continue;
+            }
+            
             /* watch the log cache size */
-            auto log_cache_size = log_cache.size();
+            auto log_cache_size = 0;
+            {
+                // min lock range
+                std::lock_guard<std::mutex> guard(log_cache_mutex);
+                log_cache_size = log_cache.size();
+            }
             if (!log_thres_warned && log_cache_size > log_cache_warn_threshold) {
                 VP_WARN(vp_utils::string_format("[logger] log cache size is exceeding threshold! cache size is: [%d], threshold is: [%d]", log_cache_size, log_cache_warn_threshold));
                 log_thres_warned = true;  // warn 1 time
@@ -113,6 +153,9 @@ namespace vp_utils {
     }
 
     void vp_logger::write_to_kafka(const std::string& log) {
-        // TO-DO
+        #ifdef VP_WITH_KAFKA
+        // kafka_writer.write(log);
+        kafka_writer << log;
+        #endif
     }
 }
