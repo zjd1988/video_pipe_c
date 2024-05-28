@@ -20,6 +20,7 @@ namespace vp_nodes {
         auto& canvas = meta->osd_frame;
         
         // scan face targets
+        printf("detect %d faces\n", meta->face_targets.size());
         for(auto& i : meta->face_targets) {
             cv::rectangle(canvas, cv::Rect(i->x, i->y, i->width, i->height), cv::Scalar(0, 255, 0), 2);
 

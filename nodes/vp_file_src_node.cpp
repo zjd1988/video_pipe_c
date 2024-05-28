@@ -44,7 +44,8 @@ namespace vp_nodes {
             // try to open capture
             if (!file_capture.isOpened()) {
                 if(!file_capture.open(this->gst_template, cv::CAP_GSTREAMER)) {
-                    VP_WARN(vp_utils::string_format("[%s] open file failed, try again...", node_name.c_str()));
+                    VP_WARN(vp_utils::string_format("[%s] open file [%s] failed, try again...", 
+                        node_name.c_str(), this->gst_template.c_str()));
                     continue;
                 }
             }

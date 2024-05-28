@@ -19,9 +19,9 @@ int main() {
     // create nodes
     auto file_src_0 = std::make_shared<vp_nodes::vp_file_src_node>("file_src_0", 0, "./vp_data/test_video/unclear.mp4", 0.5);
     auto file_src_1 = std::make_shared<vp_nodes::vp_file_src_node>("file_src_1", 1, "./vp_data/test_video/roadblock.mp4", 0.6);
-    auto obstacle_detector = std::make_shared<vp_nodes::vp_yolo_detector_node>("obstacle_detector", "./vp_data/models/det_cls/obstacles_yolov5s.onnx", "", "./vp_data/models/det_cls/obstacles_2classes.txt", 640, 640);
+    auto obstacle_detector = std::make_shared<vp_nodes::vp_yolo_detector_node>("obstacle_detector", "./vp_data/models/det_cls/obstacles_yolov5s.onnx", "", -1, "", "./vp_data/models/det_cls/obstacles_2classes.txt", 640, 640);
     // MUST set class_id_offset for the 2nd detector which is equal with total classes of the 1st detectors
-    auto vehicle_detector = std::make_shared<vp_nodes::vp_yolo_detector_node>("vehicle_detector", "./vp_data/models/det_cls/yolov3-tiny-2022-0721_best.weights", "./vp_data/models/det_cls/yolov3-tiny-2022-0721.cfg", "./vp_data/models/det_cls/yolov3_tiny_5classes.txt", 416, 416, 1, 2);
+    auto vehicle_detector = std::make_shared<vp_nodes::vp_yolo_detector_node>("vehicle_detector", "./vp_data/models/det_cls/yolov3-tiny-2022-0721_best.weights", "", -1, "./vp_data/models/det_cls/yolov3-tiny-2022-0721.cfg", "./vp_data/models/det_cls/yolov3_tiny_5classes.txt", 416, 416, 1, 2);
     auto osd = std::make_shared<vp_nodes::vp_osd_node>("osd");
     auto split = std::make_shared<vp_nodes::vp_split_node>("split_by_channel", true);
     auto screen_des_0 = std::make_shared<vp_nodes::vp_screen_des_node>("screen_des_0", 0);    

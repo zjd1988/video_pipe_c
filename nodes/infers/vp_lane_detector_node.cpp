@@ -5,6 +5,8 @@ namespace vp_nodes {
 
     vp_lane_detector_node::vp_lane_detector_node(std::string node_name, 
                             std::string model_path, 
+                            std::string model_name, 
+                            int         model_version, 
                             std::string model_config_path, 
                             std::string labels_path, 
                             int input_width, 
@@ -16,7 +18,7 @@ namespace vp_nodes {
                             cv::Scalar std,
                             bool swap_rb,
                             bool swap_chn):
-                            vp_primary_infer_node(node_name, model_path, model_config_path, labels_path, input_width, input_height, batch_size, class_id_offset, scale, mean, std, swap_rb, swap_chn) {
+                            vp_primary_infer_node(node_name, model_path, model_name, model_version, model_config_path, labels_path, input_width, input_height, batch_size, class_id_offset, scale, mean, std, swap_rb, swap_chn) {
         this->initialized();
     }
 

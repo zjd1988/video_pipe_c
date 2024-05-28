@@ -93,6 +93,18 @@ target_link_libraries(frame_fusion_sample ${PROJECT_NAME})
 add_executable(vp_test "vp_test.cpp")
 target_link_libraries(vp_test ${PROJECT_NAME})
 
+add_executable(1-1-1_tritonserver_sample "1-1-1_tritonserver_sample.cpp")
+target_link_libraries(1-1-1_tritonserver_sample ${PROJECT_NAME})
+
+add_executable(1-1-1_yolo_tritonserver_sample "1-1-1_yolo_tritonserver_sample.cpp")
+target_link_libraries(1-1-1_yolo_tritonserver_sample ${PROJECT_NAME})
+
+add_executable(triton_infer_sample "triton_infer_sample.cpp")
+target_link_libraries(triton_infer_sample ${PROJECT_NAME})
+
+add_executable(triton_infer_video_sample "triton_infer_video_sample.cpp")
+target_link_libraries(triton_infer_video_sample ${PROJECT_NAME})
+
 # samples depend on Kafka
 if(VP_WITH_KAFKA)
     add_executable(message_broker_kafka_sample "message_broker_kafka_sample.cpp")

@@ -1,5 +1,4 @@
 #include <memory>
-#include "VP.h"
 #include "opencv2/opencv.hpp"
 #include "../utils/logger/vp_logger.h"
 #include "../utils/vp_tritonserver.h"
@@ -9,8 +8,6 @@
 * test TrtitonServer infer api
 */
 
-#if triton_infer_sample
-
 int main()
 {
     VP_SET_LOG_INCLUDE_CODE_LOCATION(false);
@@ -18,7 +15,7 @@ int main()
     VP_LOGGER_INIT();
 
     VP_INFO("init triton server infer");
-    TRITON_SERVER_DEFAULT_INIT("/video_pipe_c/models_test", 0);
+    TRITON_SERVER_DEFAULT_INIT("/video_pipe_c/vp_data/models", 0);
 
     uint32_t test_count = 1;
     std::string model_name = "test";   // yolov7 end2end onnx model
@@ -28,7 +25,7 @@ int main()
 
     // read test image
     VP_INFO("preprocess input image");
-    cv::Mat test_mat = cv::imread("/video_pipe_c/test_image/test.jpg");
+    cv::Mat test_mat = cv::imread("/video_pipe_c/vp_data/test_image/test.jpg");
     cv::Mat blob_mat;
     cv::Scalar mean = {0, 0, 0};
     cv::dnn::blobFromImage(test_mat, blob_mat, 1.0, cv::Size(640, 640), mean);
@@ -60,11 +57,9 @@ int main()
         cv::rectangle(test_mat, cv::Point(x1, y1), cv::Point(x2, y2), cv::Scalar(255, 0, 0));
     }
 
-    cv::imwrite("/video_pipe_c/test_image/result.jpg", test_mat);
+    cv::imwrite("/video_pipe_c/vp_data/test_image/result.jpg", test_mat);
 
     // triton server uninit
     VP_INFO("uninit triton server infer");
     TRITON_SERVER_UNINIT();
 }
-
-#endif

@@ -20,7 +20,7 @@ int main() {
     // create nodes
     auto file_src_0 = std::make_shared<vp_nodes::vp_file_src_node>("file_src_0", 0, "./vp_data/test_video/vehicle_count.mp4", 0.5);
     auto rtsp_src_1 = std::make_shared<vp_nodes::vp_rtsp_src_node>("rtsp_src_1", 1, "rtsp://admin:admin12345@192.168.3.157", 0.4, "avdec_h264", 2);  // skip 2 frames every 3 frames
-    auto yolo_detector = std::make_shared<vp_nodes::vp_yolo_detector_node>("yolo_detector", "./vp_data/models/det_cls/yolov3-tiny-2022-0721_best.weights", "./vp_data/models/det_cls/yolov3-tiny-2022-0721.cfg", "./vp_data/models/det_cls/yolov3_tiny_5classes.txt");
+    auto yolo_detector = std::make_shared<vp_nodes::vp_yolo_detector_node>("yolo_detector", "./vp_data/models/det_cls/yolov3-tiny-2022-0721_best.weights", "", -1, "./vp_data/models/det_cls/yolov3-tiny-2022-0721.cfg", "./vp_data/models/det_cls/yolov3_tiny_5classes.txt");
     auto split = std::make_shared<vp_nodes::vp_split_node>("split", true);
     auto osd = std::make_shared<vp_nodes::vp_osd_node>("osd", "./vp_data/font/NotoSansCJKsc-Medium.otf");
     auto screen_des_0 = std::make_shared<vp_nodes::vp_screen_des_node>("screen_des_0", 0);

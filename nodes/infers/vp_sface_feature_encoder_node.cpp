@@ -10,7 +10,7 @@ namespace vp_nodes {
                                                                 model_name, model_version, 
                                                                 "", "", 
                                                                 112, 112, 
-                                                                1, std::vector<int>(), 
+                                                                1, std::vector<int>(), 0, 0, 
                                                                 0, 1, cv::Scalar()) {
         this->initialized();
     }

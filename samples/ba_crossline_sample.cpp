@@ -19,7 +19,7 @@ int main() {
 
     // create nodes
     auto file_src_0 = std::make_shared<vp_nodes::vp_file_src_node>("file_src_0", 0, "./vp_data/test_video/vehicle_count.mp4", 0.4);
-    auto yolo_detector = std::make_shared<vp_nodes::vp_yolo_detector_node>("yolo_detector", "./vp_data/models/det_cls/yolov3-tiny-2022-0721_best.weights", "./vp_data/models/det_cls/yolov3-tiny-2022-0721.cfg", "./vp_data/models/det_cls/yolov3_tiny_5classes.txt");
+    auto yolo_detector = std::make_shared<vp_nodes::vp_yolo_detector_node>("yolo_detector", "./vp_data/models/det_cls/yolov3-tiny-2022-0721_best.weights", "", -1, "./vp_data/models/det_cls/yolov3-tiny-2022-0721.cfg", "./vp_data/models/det_cls/yolov3_tiny_5classes.txt");
     auto tracker = std::make_shared<vp_nodes::vp_sort_track_node>("sort_tracker");
     
     // define a line in frame for every channel (value MUST in the scope of frame'size)

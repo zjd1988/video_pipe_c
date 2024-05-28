@@ -1,5 +1,4 @@
 #include <memory>
-#include "VP.h"
 #include "opencv2/opencv.hpp"
 #include "../utils/logger/vp_logger.h"
 #include "../utils/vp_tritonserver.h"
@@ -8,8 +7,6 @@
 * ## triton infer sample ##
 * test TrtitonServer infer api
 */
-
-#if triton_infer_sample
 
 int main()
 {
@@ -24,7 +21,7 @@ int main()
     std::string model_version = "1";
 
     // read test image
-    cv::VideoCapture capture("/video_pipe_c/test_video/test.avi");
+    cv::VideoCapture capture("/video_pipe_c/vp_data/test_video/test.avi");
     if (!capture.isOpened())
     {
         VP_ERROR("cannot open video file");
@@ -55,5 +52,3 @@ int main()
     VP_INFO("uninit triton server infer");
     TRITON_SERVER_UNINIT();
 }
-
-#endif

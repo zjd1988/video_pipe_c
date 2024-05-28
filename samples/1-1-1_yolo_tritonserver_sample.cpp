@@ -1,5 +1,3 @@
-#include "VP.h"
-
 #include "../nodes/vp_file_src_node.h"
 #include "../nodes/infers/vp_yolo_tritonserver_node.h"
 #include "../nodes/osd/vp_osd_node.h"
@@ -11,8 +9,6 @@
 * show multi infer nodes work together.
 * 1 detector and 2 classifiers applied on primary class ids(1/2/3).
 */
-
-#if _1_1_1_yolo_tritonserver_sample
 
 int main() {
     VP_SET_LOG_LEVEL(vp_utils::vp_log_level::INFO);
@@ -43,5 +39,3 @@ int main() {
 
     TRITON_SERVER_UNINIT();
 }
-
-#endif

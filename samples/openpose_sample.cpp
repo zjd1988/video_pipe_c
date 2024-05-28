@@ -16,7 +16,7 @@ int main() {
 
     // create nodes
     auto file_src_0 = std::make_shared<vp_nodes::vp_file_src_node>("file_src_0", 0, "./vp_data/test_video/pose.mp4");
-    auto openpose_detector = std::make_shared<vp_nodes::vp_openpose_detector_node>("openpose_detector", "./vp_data/models/openpose/pose/body_25_pose_iter_584000.caffemodel", "./vp_data/models/openpose/pose/body_25_pose_deploy.prototxt", "", 368, 368, 1, 0, 0.1, vp_objects::vp_pose_type::body_25);
+    auto openpose_detector = std::make_shared<vp_nodes::vp_openpose_detector_node>("openpose_detector", "./vp_data/models/openpose/pose/body_25_pose_iter_584000.caffemodel", "", -1, "./vp_data/models/openpose/pose/body_25_pose_deploy.prototxt", "", 368, 368, 1, 0, 0.1, vp_objects::vp_pose_type::body_25);
     auto pose_osd_0 = std::make_shared<vp_nodes::vp_pose_osd_node>("pose_osd_0");
     auto screen_des_0 = std::make_shared<vp_nodes::vp_screen_des_node>("screen_des_0", 0);
 
